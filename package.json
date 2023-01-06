@@ -1,0 +1,15 @@
+{
+  "name": "e-commerce-back-end",
+  "version": "1.0.0",
+  "description": "Back end for an e-commerce app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Gabriel Bigelow",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
