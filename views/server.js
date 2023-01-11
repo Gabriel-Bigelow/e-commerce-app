@@ -8,8 +8,16 @@ const app = express();
 
 const PORT = process.env.PORT || 4000;
 
-app.use(express.static('public'));
 
 app.listen(PORT, () => {
     console.log(`Server is listening on ${PORT}`);
+});
+
+
+app.get('/', async (req, res, next) => {
+    try {       
+        res.status(200).send('This is a test of the homepage get request');
+    } catch (err) {
+        next (err);
+    }
 })

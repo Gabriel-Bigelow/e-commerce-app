@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: E-Commerce API
+  version: 1.0.0
+  description: A basic API for working with E-Commerce app
+paths:
+  /auth:
+    summary: This path is used to authenticate a user.
+    post:
+      summary: Authenticate user data
+      description: >-
+        Send log-in request to the API, and authenticate the user if the data
+        matches a user account
+      operationId: login
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              examples:
+                auth_user_success:
+                  value:
+                    user:
+                      id: 1234567890
+                      username: gabebigelow
+                      name: Gabriel Bigelow
+        '404':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_user_auth_404:
+                  value: Username or password is incorrect
+      tags:
+        - Authorization
+  /products:
+    summary: This path is used to return products table data.
+    description: Returns all product items from the products table.
+    get:
+      tags:
+        - Products
+      summary: Returns all products
+      description: Returns all products from the products table from the database
+      operationId: get_all_products
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_all_products_success:
+                  value:
+                    - id: 1,
+                      name: Gaming PC Case,
+                      price: $49.99
+                      stock: 10
+                    - id: 2
+                      name: Gaming Mouse
+                      price: $59.99
+                      stock: 15
+        '404':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_user_auth_404:
+                  value: Resource not found.
+  /products/{id}:
+    summary: This path is used to operate on a specific product
+    description: >-
+      Using the product ID, the products table will be queried a product with
+      the id of {id}
+    get:
+      tags:
+        - Products
+      summary: return a product by id
+      description: >-
+        Using the specified id, query the products table for an item with an id
+        property matching {id}
+      operationId: get_products_id
+      parameters:
+        - name: id
+          in: path
+          description: ID of product to fetch
+          required: true
+          schema:
+            type: integer
+            additionalProperties: false
+            format: int64
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              examples:
+                get_product_by_id_success:
+                  value:
+                    id: 1
+                    name: Gaming PC Case
+                    price: $49.99
+                    stock: 10
+  /cart:
+    summary: This path is used to show the current user's cart information
+    description: >-
+      Returns all the product items whose product ids currently appear in the
+      carts table where cart_id matches the current user's cart_id
+    get:
+      tags:
+        - Cart
+      summary: returns the user's cart information
+      description: >-
+        Makes a query to the carts table and returns the cart that matches the
+        user id and joins the cart_products table and products table
+      operationId: get_cart
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_cart_success:
+                  value:
+                    - id: 1
+                      name: Gaming PC Case
+                      price: $49.99
+                    - id: 2
+                      name: Gaming Mouse
+                      price: $59.99
+                    - id: 5
+                      name: 8GB RAM Module
+                      price: $29.99
+                    - id: 5
+                      name: 8GB RAM Module
+                      price: $29.99
+  /orders:
+    summary: return the user's orders information
+    description: Returns all the order items for the current user
+    get:
+      summary: returns current user's orders
+      description: >-
+        Makes a query to the orders table and returns all of the orders where
+        user_id matches the current user's id
+      operationId: get_orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_orders_success:
+                  value:
+                    - 1
+                    - 2
+                    - 6
+                    - 8
+      tags:
+        - Orders
+  /orders/{id}:
+    summary: return the user's order information
+    description: returns the specified order information for the current user
+    get:
+      parameters:
+        - name: id
+          in: path
+          description: ID of product to fetch
+          required: true
+          schema:
+            type: integer
+            additionalProperties: false
+            format: int64
+      tags:
+        - Orders
+      summary: returns the current user's specified order
+      description: >-
+        Makes a query to the orders table and returns the orders item that
+        matches the current user's id, and joins the order_products table and
+        products_table
+      operationId: get_order_by_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_orders:
+                  value:
+                    - id: 1
+                      name: Gaming PC Case
+                      price: $49.99
+                    - id: 2
+                      name: Gaming Mouse
+                      price: $59.99
+                    - id: 5
+                      name: 8GB RAM Module
+                      price: $29.99
+                    - id: 5
+                      name: 8GB RAM Module
+                      price: $29.99
