@@ -1,4 +1,7 @@
 const express = require('express');
+const { getCart } = require('../db/cart');
+const { getUsers, getUsersById } = require('../db/users');
+const bodyParser = require('body-parser').json();
 
 const app = express();
 
@@ -21,3 +24,19 @@ app.get('/', async (req, res, next) => {
         next (err);
     }
 })
+
+
+app.get('/test', async (req, res, next) => {
+    try {
+        res.status(200).send('Hello again!');
+    } catch (err) {
+        next (err);
+    }
+})
+
+// testing function to withdraw data objects from database
+app.get('/testFunction', getUsers);
+app.get('/testFunction2', bodyParser, getUsersById);
+
+
+app.get('/testGetCart', bodyParser, getCart);
