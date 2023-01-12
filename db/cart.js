@@ -12,8 +12,8 @@ const getCart = (req, res, next) => {
         JOIN cart_products
         ON products.id = cart_products.product_id
         WHERE cart_products.cart_id = ${id}
-        GROUP BY (id);`
-        , (error, results) => {
+        GROUP BY (id);`, 
+        (error, results) => {
             if (error) {
                 res.send(error);
             } else {

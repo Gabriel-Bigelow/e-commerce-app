@@ -1,5 +1,6 @@
 const express = require('express');
 const { getCart } = require('../db/cart');
+const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts } = require('../db/orders');
 const { getUsers, getUsersById } = require('../db/users');
 const bodyParser = require('body-parser').json();
 
@@ -40,3 +41,8 @@ app.get('/testFunction2', bodyParser, getUsersById);
 
 
 app.get('/testGetCart', bodyParser, getCart);
+
+app.get('/testGetOrderById', bodyParser, getOrderById);
+app.get('/testGetAllOrders', bodyParser, getAllOrdersForUser);
+app.post('/testAddOrder', bodyParser, addOrder);
+app.post('/testAddOrder', bodyParser, addOrderProducts);
