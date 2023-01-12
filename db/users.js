@@ -28,6 +28,21 @@ const getUsersById = (req, res, next) => {
     })
 }
 
+const addUser = (req, res, next) => {
+    const { username, firstName, lastName, address, city, state, country } = req.body;
+
+    const query = `INSERT INTO users (user_name, first_name, last_name, address, city, state, country)
+        VALUES, (${username, firstName, lastName, address, city, state, country});`;
+    
+    db.query(query, (error, results) => {
+        if (error) {
+            next (error);
+        } else {
+            res.status(200).json('User created.');
+        }
+    });
+}
+
 module.exports = {
     getUsers,
     getUsersById

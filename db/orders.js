@@ -3,15 +3,16 @@ const db = require('./index.js');
 const getAllOrdersForUser = (req, res, next) => {
     const { userId } = req.body
 
-    db.query(`SELECT orders.id, product_id, name, COUNT (product_id) AS quantity, SUM (price) AS items_total
-        FROM orders
-        JOIN order_products
-        ON order_products.order_Id = orders.id
-        JOIN products
-        ON products.id = order_products.product_id
-        WHERE user_id = ${userId}
-        GROUP BY (orders.id, order_products.product_id, name);`, 
-        (error, results) => {
+    const query = `SELECT orders.id, product_id, name, COUNT (product_id) AS quantity, SUM (price) AS items_total
+    FROM orders
+    JOIN order_products
+    ON order_products.order_Id = orders.id
+    JOIN products
+    ON products.id = order_products.product_id
+    WHERE user_id = ${userId}
+    GROUP BY (orders.id, order_products.product_id, name);`;
+
+    db.query(query, (error, results) => {
             if (error) {
                 next(error);
             } else {
@@ -23,13 +24,14 @@ const getAllOrdersForUser = (req, res, next) => {
 const getOrderById = (req, res, next) => {
     const { id } = req.body;
 
-    db.query(`SELECT name, COUNT (id), SUM (price) AS item_total
-        FROM products
-        JOIN order_products
-        ON products.id = order_products.product_id
-        WHERE order_products.order_id = ${id}
-        GROUP BY (id);`, 
-        (error, results) => {
+    const query = `SELECT name, COUNT (id), SUM (price) AS item_total
+    FROM products
+    JOIN order_products
+    ON products.id = order_products.product_id
+    WHERE order_products.order_id = ${id}
+    GROUP BY (id);`;
+
+    db.query(query, (error, results) => {
             if (error) {
                 next(error)
             } else {
@@ -41,10 +43,9 @@ const getOrderById = (req, res, next) => {
 const addOrder = (req, res, next) => {
     const { userId } = req.body
 
-    
+    const query = `INSERT INTO orders (user_id) VALUES (${userId})`
 
-
-    db.query(`INSERT INTO orders (user_id) VALUES (${userId})`, (error, results) => {
+    db.query(query, (error, results) => {
         if (error) {
             next (error);
         } else {

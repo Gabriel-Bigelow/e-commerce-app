@@ -7,13 +7,14 @@ const getCart = (req, res, next) => {
         throw new Error('Please specify a cart ID.');
     }
 
-    db.query(`SELECT name, COUNT (id), SUM (price) AS item_total
-        FROM products
-        JOIN cart_products
-        ON products.id = cart_products.product_id
-        WHERE cart_products.cart_id = ${id}
-        GROUP BY (id);`, 
-        (error, results) => {
+    const query = `SELECT name, COUNT (id), SUM (price) AS item_total
+    FROM products
+    JOIN cart_products
+    ON products.id = cart_products.product_id
+    WHERE cart_products.cart_id = ${id}
+    GROUP BY (id);`
+
+    db.query(query, (error, results) => {
             if (error) {
                 res.send(error);
             } else {
