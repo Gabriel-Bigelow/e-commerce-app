@@ -12,32 +12,17 @@ const createUser = (req, res, next) => {
             next (error);
         } else {
             res.locals.user = results.rows[0];
-            next()
-            //res.status(200).json(results.rows);
+            next();
         }
     });
 };
 
-const deleteUser = (req, res, next) => {
-    const { userId } = req.body;
-
-    const query = `DELETE FROM users
-    WHERE id = ${userId}
-    RETURNING *;`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).send(results.rows);
-        }
-    })
-}
-
 
 
 const getUsers = (req, res, next) => {
-    db.query("SELECT * FROM users", (error, results) => {
+    const query = "SELECT * FROM users";
+
+    db.query(query, (error, results) => {
         if (error) {
             next(error);
         } else {
@@ -66,9 +51,25 @@ const getUserById = (req, res, next) => {
     })
 };
 
+const deleteUser = (req, res, next) => {
+    const { userId } = req.body;
+
+    const query = `DELETE FROM users
+    WHERE id = ${userId}
+    RETURNING *;`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.status(200).send(results.rows);
+        }
+    })
+}
+
 module.exports = {
     createUser,
-    deleteUser,
     getUsers,
-    getUserById    
+    getUserById,
+    deleteUser
 }

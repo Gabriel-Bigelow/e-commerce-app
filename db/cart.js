@@ -1,6 +1,23 @@
 const e = require('express');
 const db = require('./index.js');
 
+const createCart = (req, res, next) => {
+    const userId = res.locals.user.id;
+    
+    const query = `INSERT INTO carts (user_id)
+    VALUES (${userId})
+    RETURNING *`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.locals.cart = results.rows[0];
+            res.status(200).send(res.locals);
+        }
+    }) 
+}
+
 const getCart = (req, res, next) => {
     const { cartId } = req.body;
 
@@ -24,23 +41,6 @@ const getCart = (req, res, next) => {
     })
 };
 
-const createCart = (req, res, next) => {
-    const userId = res.locals.user.id;
-    
-    const query = `INSERT INTO carts (user_id)
-    VALUES (${userId})
-    RETURNING *`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.locals.cart = results.rows[0];
-            res.status(200).send(res.locals);
-        }
-    }) 
-}
-
 const clearCartItems = (req, res, next) => {
     const { cartId } = req.body;
     console.log(cartId);
@@ -58,10 +58,25 @@ const clearCartItems = (req, res, next) => {
     })
 };
 
+const deleteCart = (req, res, next) => {
+    const userId = res.locals.user.id;
+
+    const query = `DELETE FROM carts
+    WHERE id = ${userId}`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+
+        }
+    })
+}
 
 
 module.exports = {
-    getCart,
     createCart,
+    getCart,
     clearCartItems,
+    deleteCart
 };

@@ -74,6 +74,7 @@ const getProductsFromCart = (req, res, next) => {
     })
 }
 
+//potential changes?
 //pass cart_products rows in | delete custom request
 //pass response to next middleware function 
 const addOrderProducts = (req, res, next) => {
@@ -90,7 +91,53 @@ const addOrderProducts = (req, res, next) => {
             next();
         }
     })
-}
+};
+
+
+// const getProductsFromOrders = (req, res, next) => {
+
+// }
+
+
+// const getOrdersProductsForDelete = (req, res, next) => {
+//     const { orders } = res.locals;
+
+//     const query = `SELECT orders.id, product_id, name, COUNT (product_id) AS quantity, SUM (price) AS items_total
+//     FROM orders
+//     JOIN order_products
+//     ON order_products.order_Id = orders.id
+//     JOIN products
+//     ON products.id = order_products.product_id
+//     WHERE user_id = ${userId}
+//     GROUP BY (orders.id, order_products.product_id, name);`;
+
+//     db.query(query, (error, results) => {
+//         if (error) {
+//             throw error;
+//         } else {
+//             res.locals.orders = results.rows;
+//             next();
+//         }
+//     })
+// }
+
+
+// const deleteOrders = (req, res, next) => {
+//     const userId = res.locals.user.id;
+
+//     const query = `DELETE FROM users
+//     WHERE user_id = ${userId}
+//     RETURNING *`;
+
+//     db.query(query, (error, results) => {
+//         if (error) {
+//             throw error;
+//         } else {
+//             res.locals.orders = results.rows;
+//             next();
+//         }
+//     })
+// }
 
 module.exports = {
     getAllOrdersForUser,
@@ -98,4 +145,7 @@ module.exports = {
     addOrder,
     getProductsFromCart,
     addOrderProducts
+
+    //getOrdersProductsForDelete,
+
 }

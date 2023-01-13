@@ -52,6 +52,7 @@ const addProductToCart = (req, res, next) => {
 const removeProductFromCart = (req, res, next) => {
     const { cartId, productId } = req.body;
 
+    //check this for redundancy 
     const query = `DELETE FROM cart_products (product_id)
     WHERE cart_id = ${cartId} AND product_id = ${productId}
     RETURNING *`;

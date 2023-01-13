@@ -1,6 +1,6 @@
 const express = require('express');
 const { getCart, clearCartItems, createCart } = require('../db/cart');
-const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart } = require('../db/orders');
+const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart, getOrdersProductsForDelete } = require('../db/orders');
 const { addProductToCart, removeProductFromCart, addProduct, createProduct, deleteProduct } = require('../db/products');
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
 const bodyParser = require('body-parser').json();
@@ -22,7 +22,8 @@ app.listen(PORT, () => {
 //req.body - username, firstName, lastName, address, city, state (2), country (3)
 app.post('/users/createUser', bodyParser, createUser, createCart);
 //req.body - userId
-app.delete('/users/deleteUser', bodyParser, deleteUser);
+// delete orders_products, then orders, then cart_products, then carts, then user
+app.delete('/users/deleteUser', bodyParser, /*getOrdersProductsForDelete,*/ clearCartItems, deleteUser);
 //None
 app.get('/getUsers', getUsers);
 //req.body - userId
