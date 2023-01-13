@@ -1,9 +1,10 @@
+const e = require('express');
 const db = require('./index.js');
 
 const getCart = (req, res, next) => {
-    const { id } = req.body;
+    const { cartId } = req.body;
 
-    if (!id) {
+    if (!cartId) {
         throw new Error('Please specify a cart ID.');
     }
 
@@ -11,8 +12,8 @@ const getCart = (req, res, next) => {
     FROM products
     JOIN cart_products
     ON products.id = cart_products.product_id
-    WHERE cart_products.cart_id = ${id}
-    GROUP BY (id);`
+    WHERE cart_products.cart_id = ${cartId}
+    GROUP BY (id);`;
 
     db.query(query, (error, results) => {
             if (error) {
@@ -23,7 +24,24 @@ const getCart = (req, res, next) => {
     })
 }
 
+const clearCartItems = (req, res, next) => {
+    const { cartId } = req.body;
+
+    const query = `DELETE FROM cart_products 
+    WHERE cart_id = ${cartId}`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            next(error);
+        } else {
+            next();
+        }
+    })
+};
+
+
 
 module.exports = {
-    getCart
+    getCart,
+    clearCartItems
 }

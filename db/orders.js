@@ -22,13 +22,13 @@ const getAllOrdersForUser = (req, res, next) => {
 };
 
 const getOrderById = (req, res, next) => {
-    const { id } = req.body;
+    const { orderId } = req.params;
 
     const query = `SELECT name, COUNT (id), SUM (price) AS item_total
     FROM products
     JOIN order_products
     ON products.id = order_products.product_id
-    WHERE order_products.order_id = ${id}
+    WHERE order_products.order_id = ${orderId}
     GROUP BY (id);`;
 
     db.query(query, (error, results) => {
@@ -43,29 +43,34 @@ const getOrderById = (req, res, next) => {
 const addOrder = (req, res, next) => {
     const { userId } = req.body
 
-    const query = `INSERT INTO orders (user_id) VALUES (${userId})`
+    const query = `INSERT INTO orders (user_id) 
+    VALUES (${userId}) 
+    RETURNING *`
 
     db.query(query, (error, results) => {
         if (error) {
             next (error);
         } else {
-            next()
+            next();
         }
     })
 }
 
+//pass cart_products rows in | delete custom request
+//pass response to next middleware function 
 const addOrderProducts = (req, res, next) => {
     const { products } = req.body;
 
     let query = `INSERT INTO order_products (order_id, product_id) VALUES `;
     products.forEach(product => query = query.concat(`(18, ${product.productId}),`));
     query = query.slice(0, query.length-1);
+    query.concat('RETURNING *');
 
     db.query(query, (error, results) => {
         if (error) {
             next (error);
         } else {
-            res.status(200).send('Order added');
+            res.status(200).send(results.rows);
         }
     })
 }
