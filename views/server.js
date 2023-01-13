@@ -1,6 +1,6 @@
 const express = require('express');
 const { getCart, clearCartItems } = require('../db/cart');
-const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts } = require('../db/orders');
+const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart } = require('../db/orders');
 const { addProductToCart, removeProductFromCart, addProduct, createProduct, deleteProduct } = require('../db/products');
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
 const bodyParser = require('body-parser').json();
@@ -19,39 +19,35 @@ app.listen(PORT, () => {
 });
 
 
-// app.get('/test', async (req, res, next) => {
-//     try {
-//         res.status(200).send('Hello again!');
-//     } catch (err) {
-//         next (err);
-//     }
-// })
-
-// testing function to withdraw data objects from database
-
-//No params/body
+//req.body - username, firstName, lastName, address, city, state (2), country (3)
+app.post('/users/createUser', bodyParser, createUser);
+//req.body - userId
+app.delete('/users/deleteUser', bodyParser, deleteUser);
+//None
 app.get('/getUsers', getUsers);
-//req.body.userId
+//req.body - userId
 app.get('/getUserById', bodyParser, getUserById);
 
 
-//req.body
+//req.body - cartId
 app.get('/cart', bodyParser, getCart);
 
-app.post('/users/createUser', bodyParser, createUser);
-app.delete('/users/deleteUser', bodyParser, deleteUser);
 
 
 
-app.get('/orders/:id', bodyParser, getOrderById);
+//req.params - orderId
+app.get('/orders/:orderId', bodyParser, getOrderById);
+//none
 app.get('/orders', bodyParser, getAllOrdersForUser);
 
-app.post('/orders/addOrder', bodyParser, addOrder);
-app.post('/orders/addOrder', bodyParser, addOrderProducts);
-app.delete('/orders/addOrder', bodyParser, clearCartItems);
+//req.body - cartId, userId, products
+app.post('/orders/createOrder', bodyParser, addOrder, getProductsFromCart, addOrderProducts, clearCartItems);
 
-
+//req.body - name, price, stock
 app.post('/products/addProduct', bodyParser, createProduct);
+//req.body - productId
 app.delete('/products/deleteProduct', bodyParser, deleteProduct);
+//req.body - cartId, productId
 app.post('/products/:productId/addToCart', bodyParser, addProductToCart);
+//req.body - cartId, productId
 app.delete('/cart/:productId/removeFromCart', bodyParser, removeProductFromCart);

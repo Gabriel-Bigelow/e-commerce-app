@@ -33,7 +33,8 @@ const deleteProduct = (req, res, next) => {
 }
 
 const addProductToCart = (req, res, next) => {
-    const { cartId, productId } = req.body;
+    const { cartId } = req.body;
+    const { productId } = req.params;
 
     const query = `INSERT INTO cart_products (cart_id, product_id)
     VALUES (${cartId}, ${productId})

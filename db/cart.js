@@ -22,19 +22,21 @@ const getCart = (req, res, next) => {
                 res.status(200).send(results.rows);
             }
     })
-}
+};
 
 const clearCartItems = (req, res, next) => {
     const { cartId } = req.body;
+    console.log(cartId);
 
     const query = `DELETE FROM cart_products 
-    WHERE cart_id = ${cartId}`;
+    WHERE cart_id = ${cartId}
+    RETURNING *`;
 
     db.query(query, (error, results) => {
         if (error) {
             next(error);
         } else {
-            next();
+            res.status(200).send(results.rows);
         }
     })
 };
@@ -44,4 +46,4 @@ const clearCartItems = (req, res, next) => {
 module.exports = {
     getCart,
     clearCartItems
-}
+};

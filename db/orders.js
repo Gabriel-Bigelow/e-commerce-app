@@ -51,7 +51,25 @@ const addOrder = (req, res, next) => {
         if (error) {
             next (error);
         } else {
+            res.locals.orderId = results.rows[0].id;
             next();
+        }
+    })
+};
+
+const getProductsFromCart = (req, res, next) => {
+    const { cartId } = req.body;
+    
+    const query = `SELECT product_id 
+    FROM cart_products 
+    WHERE cart_id = ${cartId}`;
+
+    db.query(query, (error, results) => { 
+        if (error) {
+            throw error;
+        } else {
+            res.locals.products = results.rows;
+            next()
         }
     })
 }
@@ -59,18 +77,17 @@ const addOrder = (req, res, next) => {
 //pass cart_products rows in | delete custom request
 //pass response to next middleware function 
 const addOrderProducts = (req, res, next) => {
-    const { products } = req.body;
+    const { products, orderId } = res.locals;
 
     let query = `INSERT INTO order_products (order_id, product_id) VALUES `;
-    products.forEach(product => query = query.concat(`(18, ${product.productId}),`));
+    products.forEach(product => query = query.concat(`(${orderId}, ${product["product_id"]}),`));
     query = query.slice(0, query.length-1);
-    query.concat('RETURNING *');
 
     db.query(query, (error, results) => {
         if (error) {
             next (error);
         } else {
-            res.status(200).send(results.rows);
+            next();
         }
     })
 }
@@ -79,5 +96,6 @@ module.exports = {
     getAllOrdersForUser,
     getOrderById,
     addOrder,
+    getProductsFromCart,
     addOrderProducts
 }
