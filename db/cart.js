@@ -17,12 +17,29 @@ const getCart = (req, res, next) => {
 
     db.query(query, (error, results) => {
             if (error) {
-                res.send(error);
+                throw error;
             } else {
                 res.status(200).send(results.rows);
             }
     })
 };
+
+const createCart = (req, res, next) => {
+    const userId = res.locals.user.id;
+    
+    const query = `INSERT INTO carts (user_id)
+    VALUES (${userId})
+    RETURNING *`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.locals.cart = results.rows[0];
+            res.status(200).send(res.locals);
+        }
+    }) 
+}
 
 const clearCartItems = (req, res, next) => {
     const { cartId } = req.body;
@@ -45,5 +62,6 @@ const clearCartItems = (req, res, next) => {
 
 module.exports = {
     getCart,
-    clearCartItems
+    createCart,
+    clearCartItems,
 };

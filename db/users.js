@@ -11,7 +11,9 @@ const createUser = (req, res, next) => {
         if (error) {
             next (error);
         } else {
-            res.status(200).json(results.rows);
+            res.locals.user = results.rows[0];
+            next()
+            //res.status(200).json(results.rows);
         }
     });
 };

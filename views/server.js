@@ -1,5 +1,5 @@
 const express = require('express');
-const { getCart, clearCartItems } = require('../db/cart');
+const { getCart, clearCartItems, createCart } = require('../db/cart');
 const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart } = require('../db/orders');
 const { addProductToCart, removeProductFromCart, addProduct, createProduct, deleteProduct } = require('../db/products');
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
@@ -20,7 +20,7 @@ app.listen(PORT, () => {
 
 
 //req.body - username, firstName, lastName, address, city, state (2), country (3)
-app.post('/users/createUser', bodyParser, createUser);
+app.post('/users/createUser', bodyParser, createUser, createCart);
 //req.body - userId
 app.delete('/users/deleteUser', bodyParser, deleteUser);
 //None
