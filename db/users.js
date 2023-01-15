@@ -1,5 +1,6 @@
 const db = require('./index.js');
 
+//INSERTS A NEW ROW INTO USERS AND TRIGGERS AN SQL FUNCTION TO CREATE A CART ASSOCIATED WITH THE USER
 const createUser = (req, res, next) => {
     const { username, firstName, lastName, address, city, state, country } = req.body;
 

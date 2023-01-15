@@ -54,7 +54,7 @@ const addOrder = (req, res, next) => {
             res.locals.orderId = results.rows[0].id;
             next();
         }
-    })
+    });
 };
 
 const getProductsFromCart = (req, res, next) => {
@@ -94,58 +94,40 @@ const addOrderProducts = (req, res, next) => {
 };
 
 
-// const getProductsFromOrders = (req, res, next) => {
-
-// }
 
 
-// const getOrdersProductsForDelete = (req, res, next) => {
-//     const { orders } = res.locals;
+const deleteAllOrdersByUserId = (req, res, next) => {
+    const { userId } = req.body;
 
-//     const query = `SELECT orders.id, product_id, name, COUNT (product_id) AS quantity, SUM (price) AS items_total
-//     FROM orders
-//     JOIN order_products
-//     ON order_products.order_Id = orders.id
-//     JOIN products
-//     ON products.id = order_products.product_id
-//     WHERE user_id = ${userId}
-//     GROUP BY (orders.id, order_products.product_id, name);`;
+    const query = `WITH orderProductsToDelete AS (
+        SELECT orders.id AS order_id, product_id
+        FROM orders
+        JOIN order_products
+        ON orders.id = order_products.order_id
+        WHERE user_id = ${userId}
+      ),
+      productsDeleted AS (
+        DELETE FROM order_products
+        WHERE order_id IN (SELECT order_id FROM orderProductsToDelete)
+      )
+      DELETE FROM orders
+      WHERE user_id = ${userId};`;
 
-//     db.query(query, (error, results) => {
-//         if (error) {
-//             throw error;
-//         } else {
-//             res.locals.orders = results.rows;
-//             next();
-//         }
-//     })
-// }
-
-
-// const deleteOrders = (req, res, next) => {
-//     const userId = res.locals.user.id;
-
-//     const query = `DELETE FROM users
-//     WHERE user_id = ${userId}
-//     RETURNING *`;
-
-//     db.query(query, (error, results) => {
-//         if (error) {
-//             throw error;
-//         } else {
-//             res.locals.orders = results.rows;
-//             next();
-//         }
-//     })
-// }
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            next();
+        }
+    });
+}
 
 module.exports = {
     getAllOrdersForUser,
     getOrderById,
     addOrder,
     getProductsFromCart,
-    addOrderProducts
+    addOrderProducts,
 
-    //getOrdersProductsForDelete,
-
+    deleteAllOrdersByUserId
 }

@@ -1,6 +1,6 @@
 const express = require('express');
-const { getCart, clearCartItems, createCart } = require('../db/cart');
-const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart, getOrdersProductsForDelete } = require('../db/orders');
+const { getCart, clearCartItems, createCart, deleteCart, checkoutCart } = require('../db/cart');
+const { getOrderById, getAllOrdersForUser, addOrder, addOrderProducts, getProductsFromCart, getOrdersProductsForDelete, getOrdersForDelete, deleteOrderProducts, deleteOrders, deleteAllOrdersByUserId } = require('../db/orders');
 const { addProductToCart, removeProductFromCart, addProduct, createProduct, deleteProduct } = require('../db/products');
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
 const bodyParser = require('body-parser').json();
@@ -20,10 +20,10 @@ app.listen(PORT, () => {
 
 
 //req.body - username, firstName, lastName, address, city, state (2), country (3)
-app.post('/users/createUser', bodyParser, createUser, createCart);
+app.post('/users/createUser', bodyParser, createUser);
 //req.body - userId
 // delete orders_products, then orders, then cart_products, then carts, then user
-app.delete('/users/deleteUser', bodyParser, /*getOrdersProductsForDelete,*/ clearCartItems, deleteUser);
+app.delete('/users/deleteUser', bodyParser, deleteAllOrdersByUserId, deleteCart, deleteUser);
 //None
 app.get('/getUsers', getUsers);
 //req.body - userId
@@ -33,6 +33,8 @@ app.get('/getUserById', bodyParser, getUserById);
 //req.body - cartId
 app.get('/cart', bodyParser, getCart);
 
+//req.body - userId
+app.post('/cart/checkout', bodyParser, checkoutCart);
 
 
 
@@ -41,8 +43,7 @@ app.get('/orders/:orderId', bodyParser, getOrderById);
 //none
 app.get('/orders', bodyParser, getAllOrdersForUser);
 
-//req.body - cartId, userId, products
-app.post('/orders/createOrder', bodyParser, addOrder, getProductsFromCart, addOrderProducts, clearCartItems);
+
 
 //req.body - name, price, stock
 app.post('/products/addProduct', bodyParser, createProduct);
