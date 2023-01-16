@@ -18,8 +18,7 @@ const createUser = (req, res, next) => {
     });
 };
 
-
-
+//returns all rows from the users table
 const getUsers = (req, res, next) => {
     const query = "SELECT * FROM users";
 
@@ -32,14 +31,9 @@ const getUsers = (req, res, next) => {
     })
 };
 
-// using an id that doesn't exist still returns an empty array. Remember this when you set up authorization, if
-// data fetching uses this sort of querying.
+// using an id that doesn't exist still returns an empty array. Remember this when you set up authorization, if having undefined vs an empty array makes a difference.
 const getUserById = (req, res, next) => {
     const { userId } = req.body;
-
-    if (!userId) {
-        throw new Error('Please specify an ID');
-    }
 
     const query = `SELECT * FROM users WHERE id = ${userId}`
 
@@ -55,9 +49,28 @@ const getUserById = (req, res, next) => {
 const deleteUser = (req, res, next) => {
     const { userId } = req.body;
 
-    const query = `DELETE FROM users
-    WHERE id = ${userId}
-    RETURNING *;`;
+    //make deletes on all 5 tables related directly to the user's data
+    const query = `WITH deleted_order_products AS (
+        DELETE FROM order_products
+        USING orders
+        WHERE orders.id = order_products.order_id AND orders.user_id = ${userId}
+      ),
+      deleted_orders AS (
+        DELETE FROM orders
+        WHERE user_id = ${userId}
+      ),
+      deleted_cart_products AS (
+        DELETE FROM cart_products
+        USING carts
+        WHERE cart_products.cart_id = carts.id AND carts.user_id = ${userId}
+      ),
+      deleted_cart AS (
+        DELETE FROM carts
+        WHERE user_id = ${userId}
+      )
+      DELETE FROM users
+      WHERE id = ${userId}
+      RETURNING *;`
 
     db.query(query, (error, results) => {
         if (error) {

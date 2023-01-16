@@ -1,5 +1,6 @@
 const db = require('./index.js');
 
+// Returns all orders by the user, and the products associated with those orders.
 const getAllOrdersForUser = (req, res, next) => {
     const { userId } = req.body
 
@@ -10,7 +11,8 @@ const getAllOrdersForUser = (req, res, next) => {
     JOIN products
     ON products.id = order_products.product_id
     WHERE user_id = ${userId}
-    GROUP BY (orders.id, order_products.product_id, name);`;
+    GROUP BY (orders.id, order_products.product_id, name)
+    ORDER BY (orders.id) ASC;`;
 
     db.query(query, (error, results) => {
             if (error) {
@@ -21,6 +23,7 @@ const getAllOrdersForUser = (req, res, next) => {
         })
 };
 
+// Returns an order specified by orderId, and the products associated with that order.
 const getOrderById = (req, res, next) => {
     const { orderId } = req.params;
 
@@ -40,94 +43,49 @@ const getOrderById = (req, res, next) => {
     })
 };
 
-const addOrder = (req, res, next) => {
-    const { userId } = req.body
+const deleteOrderById = (req, res, next) => {
+    const { orderId } = req.body;
 
-    const query = `INSERT INTO orders (user_id) 
-    VALUES (${userId}) 
-    RETURNING *`
-
-    db.query(query, (error, results) => {
-        if (error) {
-            next (error);
-        } else {
-            res.locals.orderId = results.rows[0].id;
-            next();
-        }
-    });
-};
-
-const getProductsFromCart = (req, res, next) => {
-    const { cartId } = req.body;
-    
-    const query = `SELECT product_id 
-    FROM cart_products 
-    WHERE cart_id = ${cartId}`;
-
-    db.query(query, (error, results) => { 
-        if (error) {
-            throw error;
-        } else {
-            res.locals.products = results.rows;
-            next()
-        }
-    })
-}
-
-//potential changes?
-//pass cart_products rows in | delete custom request
-//pass response to next middleware function 
-const addOrderProducts = (req, res, next) => {
-    const { products, orderId } = res.locals;
-
-    let query = `INSERT INTO order_products (order_id, product_id) VALUES `;
-    products.forEach(product => query = query.concat(`(${orderId}, ${product["product_id"]}),`));
-    query = query.slice(0, query.length-1);
-
-    db.query(query, (error, results) => {
-        if (error) {
-            next (error);
-        } else {
-            next();
-        }
-    })
-};
-
-
-
-
-const deleteAllOrdersByUserId = (req, res, next) => {
-    const { userId } = req.body;
-
-    const query = `WITH orderProductsToDelete AS (
-        SELECT orders.id AS order_id, product_id
-        FROM orders
-        JOIN order_products
-        ON orders.id = order_products.order_id
-        WHERE user_id = ${userId}
-      ),
-      productsDeleted AS (
+    const query = `WITH deleted_order_products AS (
         DELETE FROM order_products
-        WHERE order_id IN (SELECT order_id FROM orderProductsToDelete)
-      )
+        USING orders
+        WHERE orders.id = order_products.order_id AND orders.id = ${orderId}
+      ),
       DELETE FROM orders
-      WHERE user_id = ${userId};`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            next();
-        }
-    });
+      WHERE order_id = ${orderId}`
 }
+
+
+// Deprecated (kind of) --- This is now handled by deleteUser
+// const deleteAllOrdersByUserId = (req, res, next) => {
+//     const { userId } = req.body;
+
+//     const query = `WITH orderProductsToDelete AS (
+//         SELECT orders.id AS order_id, product_id
+//         FROM orders
+//         JOIN order_products
+//         ON orders.id = order_products.order_id
+//         WHERE user_id = ${userId}
+//       ),
+//       productsDeleted AS (
+//         DELETE FROM order_products
+//         WHERE order_id IN (SELECT order_id FROM orderProductsToDelete)
+//       )
+//       DELETE FROM orders
+//       WHERE user_id = ${userId};`;
+
+//     db.query(query, (error, results) => {
+//         if (error) {
+//             throw error;
+//         } else {
+//             next();
+//         }
+//     });
+// }
 
 module.exports = {
     getAllOrdersForUser,
     getOrderById,
-    addOrder,
-    getProductsFromCart,
-    addOrderProducts,
-
-    deleteAllOrdersByUserId
+    deleteOrderById
+    // deleteAllOrdersByUserId
 }
