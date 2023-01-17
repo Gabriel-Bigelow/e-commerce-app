@@ -4,7 +4,7 @@ const db = require('./index.js');
 const createUser = (req, res, next) => {
     const { username, firstName, lastName, address, city, state, country } = req.body;
 
-    const query = `INSERT INTO users (user_name, first_name, last_name, address, city, state, country)
+    const query = `INSERT INTO users (username, first_name, last_name, address, city, state, country)
         VALUES ('${username}', '${firstName}', '${lastName}', '${address}', '${city}', '${state}', '${country}')
         RETURNING *;`;
     
@@ -35,7 +35,7 @@ const getUsers = (req, res, next) => {
 const getUserById = (req, res, next) => {
     const { userId } = req.body;
 
-    const query = `SELECT * FROM users WHERE id = ${userId}`
+    const query = `SELECT * FROM users WHERE id = ${userId} && active = true`
 
     db.query(query, (error, results) => {
         if (error) {
@@ -46,6 +46,8 @@ const getUserById = (req, res, next) => {
     })
 };
 
+
+// This is probably bad because it deletes orders. Better solution is to just make the user's data null, but leave user_id untouched.
 const deleteUser = (req, res, next) => {
     const { userId } = req.body;
 

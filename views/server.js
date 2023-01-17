@@ -1,7 +1,7 @@
 const express = require('express');
-const { checkoutCart, getCartProducts, getCartTotal } = require('../db/cart');
+const { checkoutCart, getCartProducts, getCartTotal, updateStock, checkCartProductsStock } = require('../db/cart');
 const { getOrderById, getAllOrdersForUser, deleteOrderById } = require('../db/orders');
-const { addProductToCart, removeProductFromCart, createProduct, deactivateProduct, activateProduct, updateProduct, getProducts, getProductById } = require('../db/products');
+const { addProductToCart, removeProductFromCart, createProduct, deactivateProduct, activateProduct, updateProduct, getProducts, getProductById, checkProductStock, checkSingleProductStock } = require('../db/products');
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
 const bodyParser = require('body-parser').json();
 
@@ -34,7 +34,7 @@ app.get('/getUserById', bodyParser, getUserById);
 app.get('/cart', bodyParser, getCartProducts, getCartTotal);
 
 //req.body - userId
-app.post('/cart/checkout', bodyParser, checkoutCart);
+app.post('/cart/checkout', bodyParser, checkCartProductsStock, checkoutCart, updateStock);
 
 
 
@@ -61,7 +61,10 @@ app.put('/products/activateProduct', bodyParser, activateProduct);
 app.put('/products/deactivateProduct', bodyParser, deactivateProduct);
 // THIS SHOULD MAYBE CHANGED TO userId
 //req.body - cartId, productId
-app.post('/products/:productId/addToCart', bodyParser, addProductToCart);
+app.post('/products/:productId/addToCart', bodyParser, checkSingleProductStock, addProductToCart);
 // THIS SHOULD MAYBE CHANGED TO userId
 //req.body - cartId, productId
 app.delete('/cart/:productId/removeFromCart', bodyParser, removeProductFromCart);
+
+
+app.get('/products/:productId/checkStock', bodyParser, checkSingleProductStock);
