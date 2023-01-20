@@ -1,35 +1,16 @@
 const db = require('./index.js');
 
-//Deprecated --- Create cart is now handled by a trigger on the database
-// const createCart = (req, res, next) => {
-//     const userId = res.locals.user.id;
-    
-//     const query = `INSERT INTO carts (user_id)
-//     VALUES (${userId})
-//     RETURNING *`;
-
-//     db.query(query, (error, results) => {
-//         if (error) {
-//             throw error;
-//         } else {
-//             res.locals.cart = results.rows[0];
-//             res.status(200).send(res.locals);
-//         }
-//     }) 
-// }
-
-
 //gets the total of each set of items and returns the total price of each set of items
 const getCartProducts = (req, res, next) => {
     const { userId } = req.body;
 
-    const query = `SELECT COUNT (product_id) AS quantity, product_id, name, SUM(price) AS total FROM cart_products
+    const query = `SELECT product_id, quantity, name, SUM(price) AS total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
     JOIN products
     ON products.id = cart_products.product_id
     WHERE user_id = ${userId}
-    GROUP BY (product_id, name);`;
+    GROUP BY (product_id, name, quantity)`;
 
     db.query(query, (error, results) => {
             if (error) {
@@ -45,7 +26,7 @@ const getCartProducts = (req, res, next) => {
 const getCartTotal = (req, res, next) => {
     const { userId } = req.body;
 
-    const query = `SELECT COUNT (product_id) AS quantity, SUM(price) AS total FROM cart_products
+    const query = `SELECT COUNT (product_id) AS product_types, SUM (product_id) AS total_items, SUM(price) AS total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
     JOIN products
@@ -56,11 +37,33 @@ const getCartTotal = (req, res, next) => {
         if (error) {
             throw error;
         } else {
-            res.locals.cartTotal = results.rows;
+            res.locals.cartTotal = results.rows[0];
             res.status(200).send(res.locals);
         }
     })
+};
+
+//removes a product from the cart
+const removeProductFromCart = (req, res, next) => {
+    const { userId, productId } = req.body;
+
+    const query = `DELETE FROM cart_products
+    USING carts, products
+    WHERE cart_id = carts.id 
+    AND carts.user_id = ${userId} 
+    AND products.id = cart_products.product_id 
+    AND product_id = ${productId}
+    RETURNING product_id, name, price AS price_per_item, quantity`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.status(200).send(results.rows[0]);
+        }
+    });
 }
+
 
 
 // clears all items from the current user's cart
@@ -81,6 +84,7 @@ const clearCartItems = (req, res, next) => {
     })
 };
 
+// Checks to make sure all products in the cart are in sufficient stock to create an order.
 const checkCartProductsStock = (req, res, next) => {
     const { userId } = req.body;
 
@@ -103,6 +107,7 @@ const checkCartProductsStock = (req, res, next) => {
     });
 }
 
+// Creates an order entry attached to the current user and transfers the items from the associated entries on the cart_products table to the associated order on the order_products table
 const checkoutCart = (req, res, next) => {
     const { userId } = req.body;
 
@@ -135,6 +140,7 @@ const checkoutCart = (req, res, next) => {
       });
 };
 
+//updates the stock of each product in the products table after successful checkout
 const updateStock = (req, res, next) => {
     const { newOrder } = res.locals;
 
@@ -151,54 +157,21 @@ const updateStock = (req, res, next) => {
         db.query(query, (error, results) => {
             if (error) {
                 throw error;
-            } else {
-                console.log('product updated');
-                console.log(results.rows);
             }
         })
     })
 
     res.status(201).send(newOrder);
 
-}
-
-
-// Deprecated --- delete cart is now handled by the deleteUser middleware
-// const deleteCart = (req, res, next) => {
-//     const { userId } = req.body;
-
-//     const query = `WITH cartToDelete AS (
-//         SELECT cart_id
-//         FROM cart_products
-//         JOIN carts
-//         ON cart_id = carts.id
-//         WHERE user_id = ${userId}
-//       ),
-//       productsDeleted AS (
-//         DELETE FROM cart_products
-//         WHERE cart_id IN (SELECT cart_id FROM cartToDelete)
-//       )
-//       DELETE FROM carts
-//       WHERE user_id = ${userId};`;
-
-//     db.query(query, (error, results) => {
-//         if (error) {
-//             throw error;
-//         } else {
-//             next();
-//         }
-//     })
-// }
+};
 
 
 module.exports = {
-    // createCart,
     getCartProducts,
     getCartTotal,
     clearCartItems,
-
+    removeProductFromCart,
     checkCartProductsStock,
     checkoutCart,
     updateStock
-    // deleteCart
 };

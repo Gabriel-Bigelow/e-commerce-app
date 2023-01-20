@@ -1,5 +1,24 @@
 const db = require('./index.js');
 
+// Returns all orders
+const getOrders = (req, res, next) => {
+    const query = `SELECT orders.id AS order_id, email, SUM(quantity) AS items FROM orders
+    JOIN users
+    ON orders.user_id = users.id
+    JOIN order_products
+    ON order_products.order_id = orders.id
+    GROUP BY (orders.id, email)
+    ORDER BY orders.id`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.status(200).send(results.rows);
+        }
+    })
+}
+
 // Returns all orders by the user, and the products associated with those orders.
 const getAllOrdersForUser = (req, res, next) => {
     const { userId } = req.body
@@ -16,7 +35,7 @@ const getAllOrdersForUser = (req, res, next) => {
 
     db.query(query, (error, results) => {
             if (error) {
-                next(error);
+                throw error;
             } else {
                 res.send(results.rows);
             }
@@ -36,13 +55,14 @@ const getOrderById = (req, res, next) => {
 
     db.query(query, (error, results) => {
             if (error) {
-                next(error)
+                throw error;
             } else {
                 res.send(results.rows);
             }
     })
 };
 
+// May be useful for canceling an order, but this should probably end up being deleted.
 const deleteOrderById = (req, res, next) => {
     const { orderId } = req.body;
 
@@ -84,6 +104,7 @@ const deleteOrderById = (req, res, next) => {
 // }
 
 module.exports = {
+    getOrders,
     getAllOrdersForUser,
     getOrderById,
     deleteOrderById

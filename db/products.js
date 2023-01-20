@@ -89,7 +89,7 @@ const updateProduct = (req, res, next) => {
     });
 }
 
-// reactivate any discontinued items
+// reactivate discontinued item
 const activateProduct = (req, res, next) => {
     const { productId } = req.body;
 
@@ -107,7 +107,7 @@ const activateProduct = (req, res, next) => {
     })
 }
 
-// deactivate discontinued items
+// deactivate discontinued item
 const deactivateProduct = (req, res, next) => {
     const { productId } = req.body;
 
@@ -173,28 +173,8 @@ const addProductToCart = (req, res, next) => {
     })
 }
 
-//removes a product from the cart
-const removeProductFromCart = (req, res, next) => {
-    const { productId } = req.params;
-    const { userId } = req.body;
 
-    const query = `DELETE FROM cart_products
-    USING carts, products
-    WHERE cart_id = carts.id 
-    AND carts.user_id = ${userId} 
-    AND products.id = cart_products.product_id 
-    AND product_id = ${productId}
-    RETURNING product_id, name, price AS price_per_item, quantity`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).send(results.rows[0]);
-        }
-    });
-}
-
+// Checks to make sure a single product is in stock before adding it to a user's cart. This will prevent most errant orders where a user tries to buy more items than are available.
 const checkSingleProductStock = (req, res, next) => {
     const { productId } = req.params;
     const { userId } = req.body;
@@ -239,6 +219,5 @@ module.exports = {
     activateProduct,
     deactivateProduct,
     addProductToCart,
-    removeProductFromCart,
     checkSingleProductStock
 }
