@@ -22,4 +22,5 @@ productsRouter.put('/deactivateProduct', bodyParser, deactivateProduct);
 productsRouter.post('/:productId/addToCart', bodyParser, checkSingleProductStock, addProductToCart);
 
 
+
 module.exports = productsRouter;
