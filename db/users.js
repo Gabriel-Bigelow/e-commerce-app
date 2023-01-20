@@ -20,7 +20,7 @@ const createUser = (req, res, next) => {
 
 //returns all rows from the users table
 const getUsers = (req, res, next) => {
-    const query = "SELECT * FROM users";
+    const query = "SELECT * FROM users ORDER BY id ASC";
 
     db.query(query, (error, results) => {
         if (error) {
