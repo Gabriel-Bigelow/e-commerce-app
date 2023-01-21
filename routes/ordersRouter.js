@@ -1,19 +1,18 @@
 const express = require('express');
 const ordersRouter = express.Router();
-const bodyParser = require('body-parser').json();
 
 const { getOrderById, getAllOrdersForUser, deleteOrderById, getOrders } = require('../db/orders');
 
 
 
 // NONE
-ordersRouter.get('/orders', getOrders);
+ordersRouter.get('/all', getOrders);
 //req.params - orderId
-ordersRouter.get('/orders/:orderId', bodyParser, getOrderById);
+ordersRouter.get('/:orderId', getOrderById);
 //req.body - userId
-ordersRouter.get('/user/orders', bodyParser, getAllOrdersForUser);
+ordersRouter.get('/user/orders', getAllOrdersForUser);
 //req.body - orderId
-ordersRouter.delete('/orders/deleteOrder', bodyParser, deleteOrderById);
+ordersRouter.delete('/orders/deleteOrder', deleteOrderById);
 
 
 

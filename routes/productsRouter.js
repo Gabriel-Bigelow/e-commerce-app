@@ -1,6 +1,5 @@
 const express = require('express');
 const productsRouter = express.Router();
-const bodyParser = require('body-parser').json();
 
 const { addProductToCart, createProduct, deactivateProduct, activateProduct, updateProduct, getProducts, getProductById, checkSingleProductStock } = require('../db/products');
 
@@ -9,17 +8,17 @@ const { addProductToCart, createProduct, deactivateProduct, activateProduct, upd
 //none
 productsRouter.get('/', getProducts);
 //req.params - productId
-productsRouter.get('/:productId', bodyParser, getProductById);
+productsRouter.get('/:productId', getProductById);
 //req.body - name, price, stock
-productsRouter.post('/createProduct', bodyParser, createProduct);
+productsRouter.post('/createProduct', createProduct);
 //req.body - productId (optional: name, price, stock) ---- POST request because it may end up making a new Products table entry. Put requests should always return the same value.
-productsRouter.post('/updateProduct', bodyParser, updateProduct);
+productsRouter.post('/updateProduct', updateProduct);
 //req.body - productId
-productsRouter.put('/activateProduct', bodyParser, activateProduct);
+productsRouter.put('/activateProduct', activateProduct);
 //req.body - productId
-productsRouter.put('/deactivateProduct', bodyParser, deactivateProduct);
+productsRouter.put('/deactivateProduct', deactivateProduct);
 //req.body - userId | req.params - productId
-productsRouter.post('/:productId/addToCart', bodyParser, checkSingleProductStock, addProductToCart);
+productsRouter.post('/:productId/addToCart', checkSingleProductStock, addProductToCart);
 
 
 

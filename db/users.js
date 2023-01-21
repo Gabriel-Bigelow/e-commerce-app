@@ -21,8 +21,8 @@ const createUser = (req, res, next) => {
 //returns all rows from the users table
 const getUsers = (req, res, next) => {
     const query = `SELECT * FROM users 
-    WHERE active = true
-    ORDER BY id ASC`;
+        WHERE active = true
+        ORDER BY id ASC`;
 
     db.query(query, (error, results) => {
         if (error) {
@@ -42,7 +42,10 @@ const getUserById = (req, res, next) => {
     db.query(query, (error, results) => {
         if (error) {
             throw error;
-        } else {
+        } else if (results.rows.length < 1) {
+            res.status(404).send("User not found.")
+        }
+        else {
             res.status(200).json(results.rows);
         }
     })

@@ -1,17 +1,16 @@
 const express = require('express');
 const cartsRouter = express.Router();
-const bodyParser = require('body-parser').json();
 
 const { checkoutCart, getCartProducts, getCartTotal, removeProductFromCart, updateStock, checkCartProductsStock } = require('../db/cart');
 
 
 
 //req.body - userId
-cartsRouter.get('/', bodyParser, getCartProducts, getCartTotal);
+cartsRouter.get('/', getCartProducts, getCartTotal);
 //req.body - userId
-cartsRouter.post('/checkout', bodyParser, checkCartProductsStock, checkoutCart, updateStock);
+cartsRouter.post('/checkout', checkCartProductsStock, checkoutCart, updateStock);
 //req.body - userId, productId
-cartsRouter.delete('/removeProductFromCart', bodyParser, removeProductFromCart);
+cartsRouter.delete('/removeProductFromCart', removeProductFromCart);
 
 
 

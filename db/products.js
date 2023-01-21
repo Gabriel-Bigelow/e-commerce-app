@@ -130,13 +130,16 @@ const addProductToCart = (req, res, next) => {
     const { userId, quantity } = req.body;
     const { productId } = req.params;
     const product = res.locals.product;
+
+    if (!quantity) return res.status(400).send('Item quantity not specified.');
     
     let query;
 
     if (product.stock === null) {
-        res.status(404).send('itemId is invalid.');
+        return res.status(404).send('itemId is invalid.');
     }
 
+    //if product is not yet in cart, insert a row
     if (!product.quantity) {
         if (product.stock >= quantity) {
             query = `WITH user_cart AS (
@@ -149,6 +152,7 @@ const addProductToCart = (req, res, next) => {
         } else {
             return res.status(403).send('There are not that many items in stock.');
         }
+    //if product is already in cart, update that row
     } else {
         if (product.stock >= quantity) {
             query = `WITH user_cart AS (

@@ -4,6 +4,8 @@ const db = require('./index.js');
 const getCartProducts = (req, res, next) => {
     const { userId } = req.body;
 
+    if (!userId) return res.status(400).send('400 ERROR: User not specified');
+
     const query = `SELECT product_id, quantity, name, SUM(price) AS total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
@@ -25,6 +27,8 @@ const getCartProducts = (req, res, next) => {
 //gets the total number of items in the cart and the total price of the cart
 const getCartTotal = (req, res, next) => {
     const { userId } = req.body;
+
+    if (!userId) return res.status(400).send('400 ERROR: User not specified');
 
     const query = `SELECT COUNT (product_id) AS product_types, SUM (product_id) AS total_items, SUM(price) AS total FROM cart_products
     JOIN carts
@@ -70,6 +74,8 @@ const removeProductFromCart = (req, res, next) => {
 const clearCartItems = (req, res, next) => {
     const { userId } = req.body;
 
+    if (!userId) return res.status(400).send('400 ERROR: User not specified');
+
     const query = `DELETE FROM cart_products 
     USING carts
     WHERE carts.id = cart_id AND carts.user_id = ${userId}
@@ -87,6 +93,8 @@ const clearCartItems = (req, res, next) => {
 // Checks to make sure all products in the cart are in sufficient stock to create an order.
 const checkCartProductsStock = (req, res, next) => {
     const { userId } = req.body;
+
+    if (!userId) return res.status(400).send('400 ERROR: User not specified');
 
     const query = `SELECT product_id, quantity, stock
         FROM cart_products
@@ -111,6 +119,7 @@ const checkCartProductsStock = (req, res, next) => {
 const checkoutCart = (req, res, next) => {
     const { userId } = req.body;
 
+    if (!userId) return res.status(400).send('400 ERROR: User not specified');
 
     const query = `WITH current_user_cart_products AS (
         DELETE FROM cart_products

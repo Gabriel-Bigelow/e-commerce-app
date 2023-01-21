@@ -1,6 +1,5 @@
 const express = require('express');
 const usersRouter = express.Router();
-const bodyParser = require('body-parser').json();
 
 const { getUsers, getUserById, createUser, deleteUser } = require('../db/users');
 
@@ -9,11 +8,11 @@ const { getUsers, getUserById, createUser, deleteUser } = require('../db/users')
 //None
 usersRouter.get('/', getUsers);
 //req.body - userId
-usersRouter.get('/:userId', bodyParser, getUserById);
+usersRouter.get('/:userId', getUserById);
 //req.body - email, password, firstName, lastName, address, city, state (2), country (3)
-usersRouter.post('/createUser', bodyParser, createUser);
+usersRouter.post('/createUser', createUser);
 //req.body - userId
-usersRouter.delete('/deleteUser', bodyParser, deleteUser);
+usersRouter.delete('/deleteUser', deleteUser);
 
 
 

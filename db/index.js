@@ -6,9 +6,9 @@ const db = new Pool({
     database: 'e-commerce-backend-data',
     user: 'postgres',
     password: 'postgres'
-})
+});
 
-const query = (text, params, callback) => db.query(text, params, callback);
+const query = async (text, params, callback) => db.query(text, params, callback);
 
 module.exports = {
     query
