@@ -21,7 +21,9 @@ const getOrders = (req, res, next) => {
 
 // Returns all orders by the user, and the products associated with those orders.
 const getAllOrdersForUser = (req, res, next) => {
-    const { userId } = req.body
+    if (!req.user) return res.status(401).send('User not logged in.');
+
+    const userId = req.user.id;
 
     const query = `SELECT orders.id, product_id, name, COUNT (product_id) AS quantity, SUM (price) AS items_total
     FROM orders

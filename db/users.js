@@ -35,7 +35,9 @@ const getUsers = (req, res, next) => {
 
 // using an id that doesn't exist still returns an empty array. Remember this when you set up authorization, if having undefined vs an empty array makes a difference.
 const getUserById = (req, res, next) => {
-    const { userId } = req.params;
+    if (!req.user) return res.status(401).send('User not logged in.');
+
+    const userId = req.user.id;
 
     const query = `SELECT * FROM users WHERE id = ${userId} AND active = true`
 
@@ -54,7 +56,9 @@ const getUserById = (req, res, next) => {
 
 // This is probably bad because it deletes orders. Better solution is to just make the user's data null, but leave user_id untouched.
 const deleteUser = (req, res, next) => {
-    const { userId } = req.body;
+    if (!req.user) return res.status(401).send('User not logged in.');
+
+    const userId = req.user.id;
 
     //make deletes on all 5 tables related directly to the user's data
     const query = `WITH deleted_cart_products AS (

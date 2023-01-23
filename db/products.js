@@ -127,9 +127,14 @@ const deactivateProduct = (req, res, next) => {
 
 //Add or update a product type in a user's using the productId and quantity property from the request, if the requested quantity is lower or equal to the amount of available stock
 const addProductToCart = (req, res, next) => {
-    const { userId, quantity } = req.body;
+    if (!req.user) return res.status(401).send('User not logged in.');
+    
+    const userId = req.user.id;
+    const { quantity } = req.body;
     const { productId } = req.params;
     const product = res.locals.product;
+
+    
 
     if (!quantity) return res.status(400).send('Item quantity not specified.');
     
@@ -180,8 +185,10 @@ const addProductToCart = (req, res, next) => {
 
 // Checks to make sure a single product is in stock before adding it to a user's cart. This will prevent most errant orders where a user tries to buy more items than are available.
 const checkSingleProductStock = (req, res, next) => {
+    if (!req.user) return res.status(401).send('User not logged in.');
+
     const { productId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user.id;
 
     const query = `SELECT product_id, quantity, stock FROM carts
     JOIN users

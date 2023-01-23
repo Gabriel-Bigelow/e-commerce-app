@@ -15,7 +15,7 @@ authRouter.post('/logout', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.send('successful logout');
+        res.status(200).send('successful logout');
     })
 })
 

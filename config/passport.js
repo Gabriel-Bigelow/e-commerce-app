@@ -50,7 +50,7 @@ passport.use(
 
 passport.use(
     'logout',
-    new LocalStrategy ( {usernameField: 'email'},
+    new LocalStrategy ( { usernameField: 'email' },
         async (username, password, done) => {
             return done(null, false);
         }
