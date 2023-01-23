@@ -16,28 +16,20 @@ const findUserByEmail = async (email) => {
 
     const data = await db.query(query);
     
-    if (await data.rowCount == 0) return false;
+    if (await data.rows.length === 0) return false;
     return await data.rows[0];
 };
 
 const findUserById = async (id) => {
-    console.log(id);
 
     query = `SELECT * FROM users
     WHERE id = ${id}`;
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            return results.rows[0];
-        }
-    })
-};
+    const data = await db.query(query);
 
-const matchPassword = (password) => {
-    const saltRounds = 10;
-}
+    if (await data.rows.length === 0) return false;
+    return await data.rows[0];
+};
 
 
 module.exports = {
