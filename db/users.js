@@ -1,4 +1,6 @@
 const db = require('./index.js');
+const bcrypt = require('bcrypt');
+const e = require('express');
 
 //INSERTS A NEW ROW INTO USERS AND TRIGGERS AN SQL FUNCTION TO CREATE A CART ASSOCIATED WITH THE USER
 
@@ -64,6 +66,40 @@ const getUserById = (req, res, next) => {
     })
 };
 
+const updateUser = async (req, res, next) => {
+    if (req.user) return res.status(401).send('User not logged in.');
+    const userId = req.user.id;
+
+    const { email, firstName, lastName, address, city, state, country, password } = req.body;
+
+    let values = '';
+
+    if (email) values = values.concat(`email = '${email}' `)
+    if (firstName) values = values.concat(`first_name = '${firstName}' `);
+    if (lastName) values = values.concat(`last_name = '${lastName}' `);
+    if (address) values = values.concat(`address = '${address}' `);
+    if (city) values = values.concat(`city = '${city}' `);
+    if (state) values = values.concat(`state = '${state}' `);
+    if (country) values = values.concat(`country = '${country}' `);
+    if (password) {
+        const salt = await bcrypt.genSalt(10);
+        const hash = bcrypt.hashSync(password, salt);
+        values = values.concat(`password = ${hash} `);
+    }
+
+    const query = `UPDATE users
+    SET ${values}
+    WHERE id = ${userId}`;
+
+    db.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.status(200).send(results.rows[0]);
+        }
+    });
+}
+
 
 // sets specified row's data as NULL for all values, except id, and marks the account inactive.
 const deleteUser = (req, res, next) => {
@@ -101,5 +137,6 @@ module.exports = {
     registerUser,
     getUsers,
     getUserById,
+    updateUser,
     deleteUser
 }

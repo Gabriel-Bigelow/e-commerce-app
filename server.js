@@ -10,8 +10,6 @@ const app = express();
 //import data here
 require('./config/passport');
 
-const PORT = process.env.PORT || 4000;
-
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
@@ -40,17 +38,9 @@ app.use('/api', apiRouter);
 
 
 
-
-
-
-
-
-
-
-
-
-
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
     console.log(`Server is listening on ${PORT}`);
 });
+

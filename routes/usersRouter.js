@@ -1,7 +1,7 @@
 const express = require('express');
 const usersRouter = express.Router();
 
-const { getUsers, getUserById, deleteUser } = require('../db/users');
+const { getUsers, getUserById, deleteUser, updateUser } = require('../db/users');
 
 
 
@@ -10,6 +10,10 @@ usersRouter.get('/', getUsers);
 
 // gets user information for Passport user that is currently logged in
 usersRouter.get('/me', getUserById);
+
+// updates user information for passport user that is currently logged in
+//req.body --- email, firstName, lastName, address, city, state, country, password
+usersRouter.put('/updateUser', updateUser);
 
 //req.body - userId --- marks all user data as null, except for userId, marks the account as inactive, and logs the Passport user out.
 usersRouter.delete('/deleteUser', deleteUser);
