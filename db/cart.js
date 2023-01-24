@@ -30,7 +30,7 @@ const getCartTotal = (req, res, next) => {
     
     const userId = req.user.id;
 
-    const query = `SELECT COUNT (product_id) AS product_types, SUM (product_id) AS total_items, SUM(price) AS total FROM cart_products
+    const query = `SELECT COUNT (product_id) AS product_types, SUM (product_id) AS total_items, SUM(price * quantity) AS total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
     JOIN products

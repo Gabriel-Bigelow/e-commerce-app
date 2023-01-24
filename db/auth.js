@@ -1,14 +1,7 @@
 const db = require('./index');
 const bcrpyt = require('bcrypt');
 
-const registerUser = async (email, password) => {
-    const query = `INSERT INTO users (email, password)
-    VALUES ('${email}', '${password}')
-    RETURNING id, email, password;`;
 
-    const data = await db.query(query);
-    return await data.rows[0];
-}
 
 const findUserByEmail = async (email) => {
     const query = `SELECT * FROM users
@@ -33,7 +26,6 @@ const findUserById = async (id) => {
 
 
 module.exports = {
-    registerUser,
     findUserByEmail,
     findUserById
 }

@@ -5,7 +5,7 @@ const { addProductToCart, createProduct, deactivateProduct, activateProduct, upd
 
 
 
-//none
+//none --- gets all products
 productsRouter.get('/', getProducts);
 //req.params - productId
 productsRouter.get('/:productId', getProductById);

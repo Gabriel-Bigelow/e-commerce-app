@@ -1,7 +1,7 @@
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-const { findUserByEmail, findUserById, registerUser } = require('../db/auth');
-const { createUser } = require('../db/users');
+const { findUserByEmail, findUserById } = require('../db/auth');
+const { registerUser, deleteUser } = require('../db/users');
 const LocalStrategy = require('passport-local').Strategy;
 
 passport.use(
@@ -56,6 +56,12 @@ passport.use(
         }
     )
 );
+
+
+
+
+
+
 
 passport.serializeUser((user, done) => {
     console.log('serializing user ' + user.id);

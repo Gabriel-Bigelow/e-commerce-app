@@ -3,16 +3,24 @@ const ordersRouter = express.Router();
 
 const { getOrderById, getAllOrdersForUser, deleteOrderById, getOrders } = require('../db/orders');
 
-
-
 // NONE
-ordersRouter.get('/all', getOrders);
-//req.params - orderId
+ordersRouter.get('/allUsersOrders', getOrders);
+
+// all orders for the Passport user that is currently logged in are grabbed.
+ordersRouter.get('/', getAllOrdersForUser);
+
+// req.params - ordedId
 ordersRouter.get('/:orderId', getOrderById);
-//req.body - userId
-ordersRouter.get('/user/orders', getAllOrdersForUser);
+
+
+
+
+
+
+
+// ORDERS SHOULD NOT NORMALY BE DELETED --- MAY RESULT IN LOSS OF DATABASE INTEGRITY
 //req.body - orderId
-ordersRouter.delete('/orders/deleteOrder', deleteOrderById);
+ordersRouter.delete('/deleteOrder', deleteOrderById);
 
 
 

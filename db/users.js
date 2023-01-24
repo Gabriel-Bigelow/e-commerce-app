@@ -1,7 +1,9 @@
 const db = require('./index.js');
 
 //INSERTS A NEW ROW INTO USERS AND TRIGGERS AN SQL FUNCTION TO CREATE A CART ASSOCIATED WITH THE USER
-const createUser = (req, res, next) => {
+
+// DEPRECATED --- handled by auth now
+/*const createUser = (req, res, next) => {
     const { email, password, firstName, lastName, address, city, state, country } = req.body;
 
     const query = `INSERT INTO users (email, first_name, last_name, address, city, state, country)
@@ -16,7 +18,16 @@ const createUser = (req, res, next) => {
             next();
         }
     });
-};
+};*/
+
+const registerUser = async (email, password) => {
+    const query = `INSERT INTO users (email, password)
+    VALUES ('${email}', '${password}')
+    RETURNING id, email, password;`;
+
+    const data = await db.query(query);
+    return await data.rows[0];
+}
 
 //returns all rows from the users table
 const getUsers = (req, res, next) => {
@@ -48,13 +59,13 @@ const getUserById = (req, res, next) => {
             res.status(404).send("User not found.")
         }
         else {
-            res.status(200).json(results.rows);
+            res.status(200).json(results.rows[0]);
         }
     })
 };
 
 
-// This is probably bad because it deletes orders. Better solution is to just make the user's data null, but leave user_id untouched.
+// sets specified row's data as NULL for all values, except id, and marks the account inactive.
 const deleteUser = (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
 
@@ -75,13 +86,19 @@ const deleteUser = (req, res, next) => {
         if (error) {
             throw error;
         } else {
-            res.status(200).send(results.rows);
+            req.logout((err) => {
+                if (err) {
+                    throw err;
+                } else {
+                    res.status(200).send(results.rows[0]);
+                }
+            });
         }
     })
 }
 
 module.exports = {
-    createUser,
+    registerUser,
     getUsers,
     getUserById,
     deleteUser

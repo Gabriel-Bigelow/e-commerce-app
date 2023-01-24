@@ -8,7 +8,7 @@ const authRouter = require('./authRouter');
 
 
 
-apiRouter.use('/carts', cartsRouter);
+apiRouter.use('/cart', cartsRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/products', productsRouter);
 apiRouter.use('/orders', ordersRouter);

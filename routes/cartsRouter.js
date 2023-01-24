@@ -4,12 +4,13 @@ const cartsRouter = express.Router();
 const { checkoutCart, getCartProducts, getCartTotal, removeProductFromCart, updateStock, checkCartProductsStock } = require('../db/cart');
 
 
-
-//req.body - userId
+// gets all items in the current user's cart, quantities, prices, and the total cart items and total price
 cartsRouter.get('/', getCartProducts, getCartTotal);
-//req.body - userId
+
+// creates an order and moves current user's cart items to order_products.
 cartsRouter.post('/checkout', checkCartProductsStock, checkoutCart, updateStock);
-//req.body - userId, productId
+
+//req.body - productId
 cartsRouter.delete('/removeProductFromCart', removeProductFromCart);
 
 

@@ -59,7 +59,7 @@ const getOrderById = (req, res, next) => {
             if (error) {
                 throw error;
             } else {
-                res.send(results.rows);
+                res.send(results.rows[0]);
             }
     })
 };

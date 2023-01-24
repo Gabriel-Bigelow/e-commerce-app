@@ -13,7 +13,7 @@ const createProduct = (req, res, next) => {
         if (error) {
             throw error;
         } else {
-            res.status(200).send(results.rows);
+            res.status(200).send(results.rows[0]);
         }
     })
 };
@@ -84,7 +84,7 @@ const updateProduct = (req, res, next) => {
         if (error) {
             throw error;
         } else {
-            res.status(200).send(results.rows);
+            res.status(200).send(results.rows[0]);
         }
     });
 }
@@ -102,7 +102,7 @@ const activateProduct = (req, res, next) => {
         if (error) {
             throw error
         } else {
-            res.status(200).send(results.rows);
+            res.status(200).send(results.rows[0]);
         }
     })
 }
@@ -120,7 +120,7 @@ const deactivateProduct = (req, res, next) => {
         if (error) {
             throw error;
         } else {
-            res.status(200).send(results.rows);
+            res.status(200).send(results.rows[0]);
         }
     })
 }
