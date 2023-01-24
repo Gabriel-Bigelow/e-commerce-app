@@ -1,6 +1,7 @@
 const db = require('./index.js');
 const bcrypt = require('bcrypt');
 const e = require('express');
+const { statement } = require('@babel/template');
 
 //INSERTS A NEW ROW INTO USERS AND TRIGGERS AN SQL FUNCTION TO CREATE A CART ASSOCIATED WITH THE USER
 
@@ -67,29 +68,37 @@ const getUserById = (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-    if (req.user) return res.status(401).send('User not logged in.');
+    if (!req.user) return res.status(401).send('User not logged in.');
     const userId = req.user.id;
 
     const { email, firstName, lastName, address, city, state, country, password } = req.body;
 
-    let values = '';
 
-    if (email) values = values.concat(`email = '${email}' `)
-    if (firstName) values = values.concat(`first_name = '${firstName}' `);
-    if (lastName) values = values.concat(`last_name = '${lastName}' `);
-    if (address) values = values.concat(`address = '${address}' `);
-    if (city) values = values.concat(`city = '${city}' `);
-    if (state) values = values.concat(`state = '${state}' `);
-    if (country) values = values.concat(`country = '${country}' `);
+    if (state && state.length !== 2) return res.status(401).send('State must be 2 characters in length. Example: OH');
+    if (country && country.length !== 3) return res.status(401).send('Country must be 3 characters in length. Example: USA');
+
+    let values = [];
+    
+    if (email) values.push(`email = '${email}'`)
+    if (firstName) values.push(`first_name = '${firstName}'`);
+    if (lastName) values.push(`last_name = '${lastName}'`);
+    if (address) values.push(`address = '${address}'`);
+    if (city) values.push(`city = '${city}'`);
+    if (state) values.push(`state = '${state}'`);
+    if (country) values.push(`country = '${country}'`);
     if (password) {
         const salt = await bcrypt.genSalt(10);
         const hash = bcrypt.hashSync(password, salt);
-        values = values.concat(`password = ${hash} `);
+        values.push(`password = '${hash}'`);
     }
+    console.log(values);
+
+    values = values.join(', ');
 
     const query = `UPDATE users
     SET ${values}
-    WHERE id = ${userId}`;
+    WHERE id = ${userId}
+    RETURNING *`;
 
     db.query(query, (error, results) => {
         if (error) {
