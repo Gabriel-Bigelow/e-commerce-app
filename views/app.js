@@ -3,12 +3,12 @@ const passport = require('passport');
 const session = require('express-session');
 const memoryStore = new session.MemoryStore();
 
-const apiRouter = require('./routes/apiRouter');
+const apiRouter = require('../routes/apiRouter');
 
 const app = express();
 
 //import data here
-require('./config/passport');
+require('../config/passport');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
