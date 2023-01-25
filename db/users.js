@@ -3,26 +3,7 @@ const bcrypt = require('bcrypt');
 const e = require('express');
 const { statement } = require('@babel/template');
 
-//INSERTS A NEW ROW INTO USERS AND TRIGGERS AN SQL FUNCTION TO CREATE A CART ASSOCIATED WITH THE USER
-
-// DEPRECATED --- handled by auth now
-/*const createUser = (req, res, next) => {
-    const { email, password, firstName, lastName, address, city, state, country } = req.body;
-
-    const query = `INSERT INTO users (email, first_name, last_name, address, city, state, country)
-        VALUES ('${email}', '${password}' ,'${firstName}', '${lastName}', '${address}', '${city}', '${state}', '${country}')
-        RETURNING *;`;
-    
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.locals.user = results.rows[0];
-            next();
-        }
-    });
-};*/
-
+// Inserts a new user into the database and triggers an SQL function to create a cart associated with that user.
 const registerUser = async (email, password) => {
     const query = `INSERT INTO users (email, password)
     VALUES ('${email}', '${password}')

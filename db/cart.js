@@ -6,13 +6,13 @@ const getCartProducts = (req, res, next) => {
     
     const userId = req.user.id;
 
-    const query = `SELECT product_id, quantity, name, SUM(price) AS total FROM cart_products
+    const query = `SELECT product_id, name, price, quantity, SUM(price * quantity) AS product_total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
     JOIN products
     ON products.id = cart_products.product_id
     WHERE user_id = ${userId}
-    GROUP BY (product_id, name, quantity)`;
+    GROUP BY (product_id, name, quantity, price)`;
 
     db.query(query, (error, results) => {
             if (error) {
@@ -30,7 +30,7 @@ const getCartTotal = (req, res, next) => {
     
     const userId = req.user.id;
 
-    const query = `SELECT COUNT (product_id) AS product_types, SUM (product_id) AS total_items, SUM(price * quantity) AS total FROM cart_products
+    const query = `SELECT COUNT (product_id) AS product_types, SUM (quantity) AS total_items, SUM(price * quantity) AS total FROM cart_products
     JOIN carts
     ON carts.id = cart_products.cart_id
     JOIN products
@@ -51,7 +51,7 @@ const getCartTotal = (req, res, next) => {
 const removeProductFromCart = (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
-    const { productId } = req.body;
+    const { productId } = req.params;
     const userId = req.user.id;
 
     const query = `DELETE FROM cart_products
@@ -152,7 +152,7 @@ const checkoutCart = (req, res, next) => {
       });
 };
 
-//updates the stock of each product in the products table after successful checkout
+// updates the stock of each product in the products table after successful checkout
 const updateStock = (req, res, next) => {
     const { newOrder } = res.locals;
 

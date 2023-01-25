@@ -1,5 +1,4 @@
 const request = require('supertest');
-const baseURL = "http://localhost:4000";
 const app = require('./app.js');
 
 describe('All users request', () => {

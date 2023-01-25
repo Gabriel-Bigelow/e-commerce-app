@@ -10,8 +10,8 @@ cartsRouter.get('/', getCartProducts, getCartTotal);
 // creates an order and moves current user's cart items to order_products.
 cartsRouter.post('/checkout', checkCartProductsStock, checkoutCart, updateStock);
 
-//req.body - productId
-cartsRouter.delete('/removeProductFromCart', removeProductFromCart);
+// req.body - productId
+cartsRouter.delete('/removeProductFromCart/:productId', removeProductFromCart);
 
 
 

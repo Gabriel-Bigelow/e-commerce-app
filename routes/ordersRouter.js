@@ -1,7 +1,7 @@
 const express = require('express');
 const ordersRouter = express.Router();
 
-const { getOrderById, getAllOrdersForUser, deleteOrderById, getOrders } = require('../db/orders');
+const { getOrderProductsById, getAllOrdersForUser, deleteOrderById, getOrders, getOrderTotalById } = require('../db/orders');
 
 // NONE
 ordersRouter.get('/allUsersOrders', getOrders);
@@ -10,7 +10,7 @@ ordersRouter.get('/allUsersOrders', getOrders);
 ordersRouter.get('/', getAllOrdersForUser);
 
 // req.params - ordedId
-ordersRouter.get('/:orderId', getOrderById);
+ordersRouter.get('/:orderId', getOrderProductsById, getOrderTotalById);
 
 
 
@@ -19,7 +19,7 @@ ordersRouter.get('/:orderId', getOrderById);
 
 
 // ORDERS SHOULD NOT NORMALY BE DELETED --- MAY RESULT IN LOSS OF DATABASE INTEGRITY
-//req.body - orderId
+// req.body - orderId
 ordersRouter.delete('/deleteOrder', deleteOrderById);
 
 
