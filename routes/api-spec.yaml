@@ -4,35 +4,366 @@ info:
   version: 1.0.0
   description: A basic API for working with E-Commerce app
 paths:
-  /auth:
-    summary: This path is used to authenticate a user.
+  /auth/register:
+    summary: This path is used to register a new user.
     post:
-      summary: Authenticate user data
+      summary: Create new user
       description: >-
-        Send log-in request to the API, and authenticate the user if the data
-        matches a user account
-      operationId: login
+        Send a register request to the API and create a new user, and log that
+        user in.
+      operationId: register
+      requestBody:
+        description: User's email address and password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: gabe@test.com
+              password: testPassword
       responses:
         '200':
           description: success
           content:
             application/json:
               examples:
-                auth_user_success:
+                post_auth_register_success:
                   value:
-                    user:
-                      id: 1234567890
-                      username: gabebigelow
-                      name: Gabriel Bigelow
-        '404':
+                    id: 1
+                    email: gabriel@gabrielbigelow.com
+                    password: >-
+                      $2b$10$w2oBTCyknEwcy5EJxwWgBeL7/Z7BouQ/N1mr8Q46PpM.2r7rVomwm
+                    firstName: null
+                    lastName: null
+                    address: null
+                    city: null
+                    state: null
+                    country: null
+                    active: true
+        '403':
           description: failure
           content:
             text/plain; charset=utf-8:
               examples:
-                post_user_auth_404:
-                  value: Username or password is incorrect
+                post_auth_auth_404:
+                  value: Invalid email address or password.
       tags:
         - Authorization
+  /auth/login:
+    summary: This path is used to authenticate a user.
+    post:
+      summary: Authenticate user data
+      description: >-
+        Send login request to the API, and authenticate the user if the data
+        matches a user account
+      operationId: login
+      requestBody:
+        description: User's email address and password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: gabe@test.com
+              password: testPassword
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              examples:
+                post_auth_login_success:
+                  value:
+                    id: 1
+                    email: gabriel@gabrielbigelow.com
+                    password: >-
+                      $2b$10$w2oBTCyknEwcy5EJxwWgBeL7/Z7BouQ/N1mr8Q46PpM.2r7rVomwm
+                    firstName: Gabriel
+                    lastName: Bigelow
+                    address: 1234 Maple Street
+                    city: Metropolis
+                    state: OH
+                    country: USA
+                    active: true
+        '401':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_auth_login_401:
+                  value: Username or password is incorrect.
+      tags:
+        - Authorization
+  /auth/logout:
+    summary: This path is used to log a user out.
+    get:
+      summary: Log user out
+      description: >-
+        Send login request to the API, and authenticate the user if the data
+        matches a user account
+      operationId: logout
+      responses:
+        '200':
+          description: success
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_auth_logout_sucess:
+                  value: logout successful
+        '401':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_auth_logout_401:
+                  value: Unauthorized.
+      tags:
+        - Authorization
+  /cart:
+    summary: This path is used to show the current user's cart information
+    description: >-
+      Returns all the product items whose product ids currently appear in the
+      carts table where cart_id matches the current user's cart_id
+    get:
+      tags:
+        - Cart
+      summary: returns the user's cart information
+      description: >-
+        Makes a query to the carts table and returns the cart that matches the
+        user id and joins the cart_products table and products table
+      operationId: get_cart
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_cart_success:
+                  value:
+                    cartProducts:
+                      - id: 1
+                        name: Gaming PC Case
+                        price: $49.99
+                        quantity: 1
+                      - id: 2
+                        name: Gaming Mouse
+                        price: $59.99
+                        quantity: 1
+                      - id: 5
+                        name: 8GB RAM Module
+                        price: $29.99
+                        quantity: 2
+                    cartTotal:
+                      product_types: 3,
+                      total_items: 4,
+                      total: $144.96
+  /cart/checkout:
+    summary: This path is used to checkout the current user's items in their cart
+    post:
+      tags:
+        - Cart
+      summary: Checks out the user's items in their cart
+      description: >-
+        Makes a query to the database to delete the cart_products where user_id
+        = current user's ID, creates a new order, and moves the deleted
+        cart_products to the order_products table.
+      operationId: post_cart_checkout
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                post_cart_checkout_success:
+                  value:
+                    - order_id: 1
+                      product_id: 1
+                      quantity: 1
+                    - order_id: 1
+                      product_id: 2
+                      quantity: 1
+                    - order_id: 1
+                      product_id: 5
+                      quantity: 2
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_checkout_unauthorized:
+                  value: User not logged in.
+        '403':
+          description: Forbidden
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_checkout_forbidden:
+                  value: User's cart is empty.
+  /cart/removeProductFromCart/{productId}:
+    summary: This path is used to remove a product from the current user's cart
+    delete:
+      tags:
+        - Cart
+      summary: Deletes a specified product from the current user's cart
+      description: >-
+        Makes a query to the database to delete the cart_products row where
+        user_id = current user's ID and product_id = req.body.productId.
+      operationId: delete_remove_product_from_cart
+      parameters:
+        - name: productId
+          in: path
+          description: ID of product to delete
+          required: true
+          schema:
+            type: integer
+            additionalProperties: false
+            format: int64
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                delete_remove_product_from_cart_sucess:
+                  value:
+                    product_id: 3
+                    name: ATX Mid-Tower Case
+                    price_per_item: $79.99
+                    quantity: 4
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                delete_remove_product_from_cart_401:
+                  value: User not logged in.
+  /orders:
+    summary: return the user's orders information
+    description: Returns all the order items for the current user
+    get:
+      summary: returns current user's orders
+      description: >-
+        Makes a query to the orders table and returns all of the orders where
+        user_id matches the current user's id
+      operationId: get_orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_orders_success:
+                  value:
+                    - order_id: 1
+                      unique_products: 3
+                      total_items: '4'
+                      total_price: $109.97
+                    - order_id: 2
+                      unique_products: 2
+                      total_items: '4'
+                      total_price: $179.98
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_orders_401:
+                  value: User not logged in.
+      tags:
+        - Orders
+  /orders/allUsersOrders:
+    summary: return all users' orders information
+    get:
+      tags:
+        - Orders
+      summary: returns all users' orders information
+      description: >-
+        Makes a query to the database to and returns every order, with the
+        order's user's email, total_items, total_price, and number of unique
+        products in the order.
+      operationId: get_all_users_orders
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_all_users_orders:
+                  - order_id: 1
+                    email: gabe@test.com
+                    unique_products: '3'
+                    total_price: $109.97
+                    total_items: '4'
+                  - order_id: 2
+                    email: gabe@test.com
+                    unique_products: '2'
+                    total_price: $179.98
+                    total_items: '4'
+        '500':
+          description: Failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_order_by_id_401:
+                  value: Internal server error.
+  /orders/{id}:
+    summary: return the user's order information
+    description: returns the specified order information for the current user
+    get:
+      parameters:
+        - name: id
+          in: path
+          description: ID of product to fetch
+          required: true
+          schema:
+            type: integer
+            additionalProperties: false
+            format: int64
+      tags:
+        - Orders
+      summary: returns the current user's specified order
+      description: >-
+        Makes a query to the orders table and returns the orders item that
+        matches the current user's id, and joins the order_products table and
+        products_table
+      operationId: get_order_by_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_orders:
+                  value:
+                    orderProducts:
+                      - product_id: 1
+                        name: Mousepad
+                        price: $14.99
+                        quantity: 1
+                        product_total: $14.99
+                      - product_id: 2
+                        name: Gaming mouse
+                        price: $59.99
+                        quantity: 1
+                        product_total: $59.99
+                      - product_id: 5
+                        name: 8 GB DDR4 RAM
+                        price: $34.99
+                        quantity: 2
+                        product_total: $69.98
+                    orderTotal:
+                      product_types: '5'
+                      total_items: '8'
+                      total: $504.92
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_order_by_id_401:
+                  value: User not logged in.
   /products:
     summary: This path is used to return products table data.
     description: Returns all product items from the products table.
@@ -63,7 +394,7 @@ paths:
           content:
             text/plain; charset=utf-8:
               examples:
-                post_user_auth_404:
+                get_products_404:
                   value: Resource not found.
   /products/{id}:
     summary: This path is used to operate on a specific product
@@ -99,100 +430,400 @@ paths:
                     name: Gaming PC Case
                     price: $49.99
                     stock: 10
-  /cart:
-    summary: This path is used to show the current user's cart information
-    description: >-
-      Returns all the product items whose product ids currently appear in the
-      carts table where cart_id matches the current user's cart_id
-    get:
+        '404':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Resource not found.
+  /products/createProduct:
+    summary: This path is used to create a new product
+    post:
       tags:
-        - Cart
-      summary: returns the user's cart information
+        - Products
+      summary: Insert a new product into the database
       description: >-
-        Makes a query to the carts table and returns the cart that matches the
-        user id and joins the cart_products table and products table
-      operationId: get_cart
+        Using the request body, a new product is inserted into the database and
+        marked as active.
+      operationId: post_create_product
+      requestBody:
+        description: Product information
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: Mousepad
+              price: $14.99
+              stock: 13
       responses:
         '200':
           description: Success
           content:
             application/json:
               examples:
-                get_cart_success:
-                  value:
-                    - id: 1
-                      name: Gaming PC Case
-                      price: $49.99
-                    - id: 2
-                      name: Gaming Mouse
-                      price: $59.99
-                    - id: 5
-                      name: 8GB RAM Module
-                      price: $29.99
-                    - id: 5
-                      name: 8GB RAM Module
-                      price: $29.99
-  /orders:
-    summary: return the user's orders information
-    description: Returns all the order items for the current user
-    get:
-      summary: returns current user's orders
-      description: >-
-        Makes a query to the orders table and returns all of the orders where
-        user_id matches the current user's id
-      operationId: get_orders
-      responses:
-        '200':
-          description: Success
+                post_create_product_200:
+                  value: |-
+                    {
+                        "id": 1,
+                        "name": "Mousepad",
+                        "price": "$14.99",
+                        "stock": 13,
+                        "active": true
+                    }
+        '400':
+          description: failure
           content:
-            application/json:
+            text/plain; charset=utf-8:
               examples:
-                get_orders_success:
-                  value:
-                    - 1
-                    - 2
-                    - 6
-                    - 8
-      tags:
-        - Orders
-  /orders/{id}:
-    summary: return the user's order information
-    description: returns the specified order information for the current user
-    get:
+                get_products_id_404:
+                  value: Malformed request body.
+  /products/{productId}/addToCart:
+    summary: This path is used to add a product to the current user's cart
+    post:
+      summary: adds a product to the current user's cart
+      description: >-
+        Using the provided productId and quantity, if the product is in
+        sufficient stock, a product entry is added to the current user's cart in
+        the amount specified.
+      operationId: post_add_to_cart
       parameters:
-        - name: id
+        - name: productId
           in: path
-          description: ID of product to fetch
+          description: ID of product to add to cart
           required: true
           schema:
             type: integer
             additionalProperties: false
             format: int64
-      tags:
-        - Orders
-      summary: returns the current user's specified order
-      description: >-
-        Makes a query to the orders table and returns the orders item that
-        matches the current user's id, and joins the order_products table and
-        products_table
-      operationId: get_order_by_id
+      requestBody:
+        description: Product quantity
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              quantity: 3
       responses:
         '200':
           description: Success
           content:
             application/json:
               examples:
-                get_orders:
-                  value:
-                    - id: 1
-                      name: Gaming PC Case
-                      price: $49.99
-                    - id: 2
-                      name: Gaming Mouse
-                      price: $59.99
-                    - id: 5
-                      name: 8GB RAM Module
-                      price: $29.99
-                    - id: 5
-                      name: 8GB RAM Module
-                      price: $29.99
+                put_activate_product_200:
+                  value: |-
+                    {
+                        "id": 1,
+                        "name": "Mousepad",
+                        "price": "$14.99",
+                        "quantity": 3
+                    }
+      tags:
+        - Products
+  /products/updateProduct:
+    summary: This path is used to update an existing product
+    post:
+      summary: Update an existing product on the database
+      description: >-
+        If the product's price or name is being changed, a new product entry
+        will be created, using the previous entries data, and then will be
+        overwritten by the updated data, to maintain database integrity on
+        already created orders. Otherwise, the provided values in the request
+        body will replace the original entry's respective values.
+      operationId: post_update_product
+      requestBody:
+        description: Product information
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              stock: 35
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                post_update_product_200:
+                  value: |-
+                    {
+                        "id": 1,
+                        "name": "Mousepad",
+                        "price": "$14.99",
+                        "stock": 35,
+                        "active": true
+                    }
+        '404':
+          description: Failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Product not found.
+      tags:
+        - Products
+  /products/activateProduct:
+    summary: This path is used to activate an inactive product.
+    put:
+      summary: activates an inactive product
+      description: >-
+        Using the provided productId, the database entry for the specified
+        product will be marked as active.
+      operationId: put_activate_product
+      requestBody:
+        description: Product information
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              productId: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                put_activate_product_200:
+                  value: |-
+                    {
+                        "id": 1,
+                        "name": "Mousepad",
+                        "price": "$14.99",
+                        "stock": 13,
+                        "active": true
+                    }
+        '404':
+          description: Failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Product not found.
+      tags:
+        - Products
+  /products/deactivateProduct:
+    summary: This path is used to deactivate an active product.
+    put:
+      summary: deactives an active product
+      description: >-
+        Using the provided productId, the database entry for the specified
+        product will be marked as inactive.
+      operationId: put_deactivate_product
+      requestBody:
+        description: Product information
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              productId: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                put_activate_product_200:
+                  value: |-
+                    {
+                        "id": 1,
+                        "name": "Mousepad",
+                        "price": "$14.99",
+                        "stock": 13,
+                        "active": false
+                    }
+        '404':
+          description: Failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Product not found.
+      tags:
+        - Products
+  /users:
+    summary: this path is used to retrieve all users
+    get:
+      summary: retrieve all users
+      description: >-
+        Queries database for all user accounts that are active and returns all
+        user accounts information
+      operationId: get_users
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_users_200:
+                  value: |-
+                    [
+                      {
+                        "id": 1,
+                        "email": "gabe@test.com",
+                        "first_name": "Gabriel",
+                        "last_name": "Bigelow",
+                        "address": "2253 Waterworks Drive",
+                        "city": "Toledo",
+                        "state": "OH",
+                        "country": "USA",
+                        "active": true,
+                        "password": "$2b$10$w2oBTCyknEwcy5EJxwWgBeL7/Z7BouQ/N1mr8Q46PpM.2r7rVomwm"
+                      },
+                      {
+                        "id": 2,
+                        "email": "user2@website.com",
+                        "first_name": "Test",
+                        "last_name": "User",
+                        "address": "123 Fake Street",
+                        "city": "Testopolis",
+                        "state": "TS",
+                        "country": "BRA",
+                        "active": true,
+                        "password": "$2b$10$w2oBTCyknEwcy5EJxwWgBeL7/Z7BouQ/N1mr8Q46PpM.2r7rVomwm"
+                      }
+                    ]
+        '404':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Resources not found.
+      tags:
+        - Users
+  /users/me:
+    summary: This path is used to retrieve the current user's information.
+    get:
+      summary: retrieve the current user's information
+      description: >-
+        Using the current session's user.id, query the Users table in the
+        database for the entry with a matching ID.
+      operationId: get_users_me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              examples:
+                get_users_200:
+                  value: |-
+                    {
+                      "id": 2,
+                      "email": "user2@website.com",
+                      "first_name": "Test",
+                      "last_name": "User",
+                      "address": "123 Fake Street",
+                      "city": "Testopolis",
+                      "state": "TS",
+                      "country": "BRA",
+                      "active": true,
+                      "password": "$2b$10$w2oBTCyknEwcy5EJxwWgBeL7/Z7BouQ/N1mr8Q46PpM.2r7rVomwm"
+                    }
+        '401':
+          description: failure
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                get_products_id_404:
+                  value: Unauthorized.
+      tags:
+        - Users
+        
+  /users/updateUser:
+    summary: This path is used to update the current user's information.
+    put:
+      tags:
+       - Users
+      summary: update the current user's information
+      description: >-
+        Using the current session's user.id, query the Users table in the database for the entry with a matching ID and update the columns with values that were passed in from req.body. At least 1 value must be included in req.body, but not all values must be updated.
+      operationId: put_update_user
+      requestBody:
+        description: Product information
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: "BobSmith@gmail.com"
+              firstName: "Bob"
+              lastName: "Smith"
+              address: "456 Real Street"
+              city: "Metropolis"
+              state: "GA"
+              country: "CAN"
+              password: "$2b$10$eLM.2r7rw2o7/Z7BouknBTCEwcy5EJN1mr8VomwQ46PpymxwWgBQ/"
+              
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              examples:
+                get_users_200:
+                  value: |-
+                    {
+                      "id": 2,
+                      "email": "BobSmith@gmail.com",
+                      "first_name": "Bob",
+                      "last_name": "Smith",
+                      "address": "456 Real Street",
+                      "city": "Metropolis",
+                      "state": "GA",
+                      "country": "CAN",
+                      "active": true,
+                      "password": "$2b$10$eLM.2r7rw2o7/Z7BouknBTCEwcy5EJN1mr8VomwQ46PpymxwWgBQ/"
+                    }
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_checkout_unauthorized:
+                  value: User not logged in.
+  /users/deleteUser:
+    summary: This path is used to delete the current user's account.
+    delete:
+      tags:
+        - Users
+      summary: delete the current user's account
+      description: >-
+        Using the current session's user.id, query the Users table in the database for the entry with a matching ID and mark all the user information as NULL, and mark the account as inactive.
+      operationId: delete_user
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              examples:
+                delete_user_200:
+                  value: |-
+                    {
+                      "id": 2,
+                      "email": "NULL",
+                      "first_name": "NULL",
+                      "last_name": "NULL",
+                      "address": "NULL",
+                      "city": "NULL",
+                      "state": "NULL",
+                      "country": "NULL",
+                      "active": true,
+                      "password": "NULL"
+                    }
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                post_checkout_unauthorized:
+                  value: User not logged in.
