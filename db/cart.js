@@ -1,189 +1,117 @@
-const db = require('./database.js');
+const supabase = require('./database.js');
 
 
 
 //gets the total of each set of items and returns the total price of each set of items
-const getCartProducts = (req, res, next) => {
+const getCartProducts = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
 
-    const query = `SELECT product_id, name, price, quantity, SUM(price * quantity) AS product_total FROM cart_products
-    JOIN carts
-    ON carts.id = cart_products.cart_id
-    JOIN products
-    ON products.id = cart_products.product_id
-    WHERE user_id = ${userId}
-    GROUP BY (product_id, name, quantity, price)`;
+    const { data, error, status } = await supabase.rpc('get_cart_products', { userid: userId });
 
-    db.query(query, (error, results) => {
-            if (error) {
-                throw error;
-            } else {
-                res.locals.cartProducts = results.rows;
-                next();
-            }
-    })
+    if (error) return res.status(status).send(error);
+
+    if (data.length > 0) {    
+        res.locals.cartProducts = data;
+        next();
+    } else {
+        return res.status(status).send('Cart is empty.');
+    }
+
 };
 
 //gets the total number of items in the cart and the total price of the cart
-const getCartTotal = (req, res, next) => {
+const getCartTotal = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
 
-    const query = `SELECT COUNT (product_id) AS product_types, SUM (quantity) AS total_items, SUM(price * quantity) AS total FROM cart_products
-    JOIN carts
-    ON carts.id = cart_products.cart_id
-    JOIN products
-    ON products.id = cart_products.product_id
-    WHERE user_id = ${userId};`
+    const { data, error, status } = await supabase.rpc('get_cart_total', {userid: userId });
+    
+    if (error) return res.status(status).send(error);
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.locals.cartTotal = results.rows[0];
-            res.status(200).send(res.locals);
-        }
-    })
+    if (data.length > 0) {
+        res.locals.cartTotal = data[0];
+        res.status(status).send(res.locals);
+    } else {
+        return res.status(status).send('Cart is empty.');
+    }
 };
 
 //removes a product from the cart
-const removeProductFromCart = (req, res, next) => {
+const removeProductFromCart = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const { productId } = req.params;
     const userId = req.user.id;
 
-    const query = `DELETE FROM cart_products
-    USING carts, products
-    WHERE cart_id = carts.id 
-    AND carts.user_id = ${userId} 
-    AND products.id = cart_products.product_id 
-    AND product_id = ${productId}
-    RETURNING product_id, name, price AS price_per_item, quantity`;
+    const { data, error, status } = await supabase.rpc('remove_product_from_cart', { userid: userId, productid: productId });
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).send(results.rows[0]);
-        }
-    });
+    if (error) return res.status(status).send(error);
+
+    if (data.length > 0) {
+        res.status(status).send(data[0]);
+    } else {
+        res.status(404).send('Product not found in cart.')
+    }
 }
 
-
-
-// clears all items from the current user's cart
-const clearCartItems = (req, res, next) => {
-    if (!req.user) return res.status(401).send('User not logged in.');
-    
-    const userId = req.user.id;
-
-    const query = `DELETE FROM cart_products 
-    USING carts
-    WHERE carts.id = cart_id AND carts.user_id = ${userId}
-    RETURNING *`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).send(results.rows);
-        }
-    })
-};
-
 // Checks to make sure all products in the cart are in sufficient stock to create an order.
-const checkCartProductsStock = (req, res, next) => {
+const checkCartProductsStock = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
 
-    const query = `SELECT product_id, quantity, stock
-        FROM cart_products
-        JOIN carts
-        ON cart_products.cart_id = carts.id
-        JOIN products
-        ON cart_products.product_id = products.id
-        WHERE carts.user_id = ${userId}`
+    const { data, error, status } = await supabase.rpc('check_cart_products_stock', { userid: userId});
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else if (results.rows.every(product => product.quantity <= product.stock)) {
-            next();            
-        } else {
-            res.status(403).send("More items in cart than are in stock.");
+    console.log(data);
+    console.log(error);
+    console.log(status);
+
+    if (error) return res.status(status).send(error);
+
+    if (data.length > 0) {
+        data.every(product => product.quantity <= product.stock)
+        if (data.every(product => product.quantity <= product.stock)) {
+            return next();
         }
-    });
+    } else {
+        res.status(403).send('There are no items in the cart.');
+    }
 }
 
 // Creates an order entry attached to the current user and transfers the items from the associated entries on the cart_products table to the associated order on the order_products table
-const checkoutCart = (req, res, next) => {
+const checkoutCart = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
 
-    const query = `WITH current_user_cart_products AS (
-        DELETE FROM cart_products
-            USING carts
-        WHERE carts.id = cart_products.cart_id AND user_id = ${userId}
-        RETURNING product_id, quantity
-      ),
-      current_order AS (
-        INSERT INTO orders (user_id)
-        VALUES (${userId})
-        RETURNING id AS order_id
-      ),
-      current_order_products AS (
-        SELECT * FROM current_order
-        CROSS JOIN current_user_cart_products
-      )
-      INSERT INTO order_products (order_id, product_id, quantity) SELECT order_id, product_id, quantity FROM current_order_products
-      RETURNING *`;
+    const { data, error, status } = await supabase.rpc('checkout_cart', { userid: userId });
 
-      db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.locals.newOrder = results.rows;
-            next()
-        }
-      });
+    if (error) return res.status(status).send(error);
+
+    if (data.length > 0) {
+        res.locals.newOrder = data;
+        next();
+    } else {
+        res.status(403).send('Cart is empty.');
+    }
 };
 
 // updates the stock of each product in the products table after successful checkout
-const updateStock = (req, res, next) => {
+const updateStock = async (req, res, next) => {
     const { newOrder } = res.locals;
 
-    newOrder.forEach(product => {
-        const query = `WITH old_product_stock AS (
-            SELECT stock FROM products
-            WHERE id = ${product.product_id}
-        )
-        UPDATE products
-        SET stock = (SELECT stock from old_product_stock) - ${product.quantity}
-        WHERE id = ${product.product_id}
-        RETURNING *`;
-
-        db.query(query, (error, results) => {
-            if (error) {
-                throw error;
-            }
-        })
-    })
+    newOrder.forEach(async product => await supabase.rpc('checkout_update_stock', { productid: product.product_id, quantity: product.quantity}));
 
     res.status(201).send(newOrder);
-
 };
 
 
 module.exports = {
     getCartProducts,
     getCartTotal,
-    clearCartItems,
     removeProductFromCart,
     checkCartProductsStock,
     checkoutCart,

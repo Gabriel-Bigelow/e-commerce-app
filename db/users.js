@@ -1,4 +1,3 @@
-const db = require('./database.js');
 const bcrypt = require('bcrypt');
 const supabase = require('./database.js');
 
@@ -40,10 +39,9 @@ const getUserById = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
+    
     const userId = req.user.id;
-
     const { email, address, city, state, country, password } = req.body;
-
 
     if (state && state.length !== 2) return res.status(401).send('State must be 2 characters in length. Example: OH');
     if (country && country.length !== 3) return res.status(401).send('Country must be 3 characters in length. Example: USA');
@@ -76,36 +74,45 @@ const updateUser = async (req, res, next) => {
 
 
 // sets specified row's data as NULL for all values, except id, and marks the account inactive.
-const deleteUser = (req, res, next) => {
+const deleteUser = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
 
     const userId = req.user.id;
+    const values = {
+        email: null,
+        password: null,
+        address: null,
+        city: null,
+        state: null,
+        country: null,
+        active: false
+    };
 
-    //make deletes on all 5 tables related directly to the user's data
-    const query = `WITH deleted_cart_products AS (
-            DELETE FROM cart_products
-            USING carts
-            WHERE cart_products.cart_id = carts.id AND carts.user_id = ${userId}
-        )
-        UPDATE users
-        SET email = NULL, first_name = NULL, last_name = NULL, address = NULL, city = NULL, state = NULL, country = NULL, active = false, password = NULL
-        WHERE id = ${userId}
-        RETURNING *;`;
+    const { data, error, status} = await supabase.from('users')
+    .update(values)
+    .eq('id', userId)
+    .select('*');
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            req.logout((err) => {
-                if (err) {
-                    throw err;
-                } else {
-                    res.status(200).send(results.rows[0]);
-                }
-            });
-        }
-    })
-}
+    const userCart = await supabase.from('carts')
+    .select()
+    .eq('user_id', userId)
+    .select('*');
+
+    supabase.from('cart_products')
+    .delete()
+    .eq('cart_id', userCart.data[0].user_id)
+    .select('*');
+
+
+    if (error) {
+        return res.status(status).send(error);
+    }
+    if (data.length > 0) {
+        return res.status(status).send(data[0]);
+    } else {
+        res.status(status).send('Something went wrong.');
+    }
+};
 
 module.exports = {
     registerUser,
