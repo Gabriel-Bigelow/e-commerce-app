@@ -1,27 +1,22 @@
-const db = require('./index');
-const bcrpyt = require('bcrypt');
+const supabase = require("./database");
 
 
 
 const findUserByEmail = async (email) => {
-    const query = `SELECT * FROM users
-    WHERE email = '${email}'`;
-
-    const data = await db.query(query);
+    const { data } = await supabase.from('users').select().eq('email', email);
+    console.log(email);
+    console.log(await supabase.from('users').select().eq('email', email))
     
-    if (await data.rows.length === 0) return false;
-    return await data.rows[0];
+    if (data.length === 0) return false;
+    return await data[0];
 };
 
 const findUserById = async (id) => {
 
-    query = `SELECT * FROM users
-    WHERE id = ${id}`;
+    const { data } = await supabase.from('users').select().eq('id', id);
 
-    const data = await db.query(query);
-
-    if (await data.rows.length === 0) return false;
-    return await data.rows[0];
+    if (data.length === 0) return false;
+    return await data[0];
 };
 
 

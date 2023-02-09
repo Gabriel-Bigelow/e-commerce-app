@@ -1,7 +1,7 @@
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const { findUserByEmail, findUserById } = require('../db/auth');
-const { registerUser, deleteUser } = require('../db/users');
+const { registerUser } = require('../db/users');
 const LocalStrategy = require('passport-local').Strategy;
 
 passport.use(

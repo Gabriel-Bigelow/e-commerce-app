@@ -1,4 +1,6 @@
-const db = require('./index.js');
+const db = require('./database.js');
+
+
 
 // Returns all orders
 const getOrders = (req, res, next) => {
@@ -106,5 +108,4 @@ module.exports = {
     getOrderProductsById,
     getOrderTotalById,
     deleteOrderById
-    // deleteAllOrdersByUserId
 }

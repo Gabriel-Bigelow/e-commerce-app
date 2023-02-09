@@ -1,4 +1,6 @@
-const db = require('./index.js');
+const db = require('./database.js');
+
+
 
 //gets the total of each set of items and returns the total price of each set of items
 const getCartProducts = (req, res, next) => {

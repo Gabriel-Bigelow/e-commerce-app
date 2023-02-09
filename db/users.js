@@ -1,93 +1,77 @@
-const db = require('./index.js');
+const db = require('./database.js');
 const bcrypt = require('bcrypt');
-const e = require('express');
-const { statement } = require('@babel/template');
+const supabase = require('./database.js');
+
 
 // Inserts a new user into the database and triggers an SQL function to create a cart associated with that user.
 const registerUser = async (email, password) => {
-    const query = `INSERT INTO users (email, password)
-    VALUES ('${email}', '${password}')
-    RETURNING id, email, password;`;
+    const { data, error } = await supabase.from('users')
+    .insert([ {email:email, password:password } ])
+    .select('*');
 
-    const data = await db.query(query);
-    return await data.rows[0];
+    return data[0];
 }
 
 //returns all rows from the users table
-const getUsers = (req, res, next) => {
-    const query = `SELECT * FROM users 
-        WHERE active = true
-        ORDER BY id ASC`;
+const getUsers = async (req, res, next) => {
+    const { data, status, error } = await supabase.from('users').select();
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).json(results.rows);
-        }
-    })
+    if (data) {
+        res.status(status).send(data);
+    } else {
+        res.status(status).send(error);
+    }
 };
 
 // using an id that doesn't exist still returns an empty array. Remember this when you set up authorization, if having undefined vs an empty array makes a difference.
-const getUserById = (req, res, next) => {
+const getUserById = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
 
     const userId = req.user.id;
 
-    const query = `SELECT * FROM users WHERE id = ${userId} AND active = true`
+    const { data, status, error } = await supabase.from('users').select().eq('id', userId);
 
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else if (results.rows.length < 1) {
-            res.status(404).send("User not found.")
-        }
-        else {
-            res.status(200).json(results.rows[0]);
-        }
-    })
+    if (data) {
+        res.status(status).send(data[0]);
+    } else {
+        res.status(status).send(error);
+    }
 };
 
 const updateUser = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     const userId = req.user.id;
 
-    const { email, firstName, lastName, address, city, state, country, password } = req.body;
+    const { email, address, city, state, country, password } = req.body;
 
 
     if (state && state.length !== 2) return res.status(401).send('State must be 2 characters in length. Example: OH');
     if (country && country.length !== 3) return res.status(401).send('Country must be 3 characters in length. Example: USA');
 
-    let values = [];
-    
-    if (email) values.push(`email = '${email}'`)
-    if (firstName) values.push(`first_name = '${firstName}'`);
-    if (lastName) values.push(`last_name = '${lastName}'`);
-    if (address) values.push(`address = '${address}'`);
-    if (city) values.push(`city = '${city}'`);
-    if (state) values.push(`state = '${state}'`);
-    if (country) values.push(`country = '${country}'`);
+    const values = {
+        email: email,
+        address: address,
+        city: city,
+        state: state,
+        country: country
+    };
+
     if (password) {
         const salt = await bcrypt.genSalt(10);
         const hash = bcrypt.hashSync(password, salt);
-        values.push(`password = '${hash}'`);
+        values.password = hash;
     }
-    console.log(values);
 
-    values = values.join(', ');
+    const { data, status } = await supabase.from('users')
+    .update(values)
+    .eq('id', userId)
+    .select('*');
 
-    const query = `UPDATE users
-    SET ${values}
-    WHERE id = ${userId}
-    RETURNING *`;
-
-    db.query(query, (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.status(200).send(results.rows[0]);
-        }
-    });
+    if (data.length > 0) {
+        res.status(status).send(data[0]);
+    } else {
+        res.status(500).send('Something went wrong.');
+    }
 }
 
 
