@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
 const memoryStore = new session.MemoryStore();
+const cors = require('cors');
 
 const apiRouter = require('../routes/apiRouter');
 
@@ -12,6 +13,7 @@ require('../config/passport');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cors());
 
 app.use(
     session({

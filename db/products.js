@@ -21,7 +21,8 @@ const createProduct = async (req, res, next) => {
 const getProducts = async (req, res, next) => {
     const { data, error } = await supabase.from('products')
     .select()
-    .eq('active', true);
+    .eq('active', true)
+    .order('id');
 
     if (data.length > 0) {
         res.status(200).send(data);
@@ -61,7 +62,7 @@ const updateProduct = async (req, res, next) => {
 
     if (values.price || values.name) {
         const oldProduct = await supabase.from('products')
-        .update( {active: false})
+        .update( {stock: 0, active: false})
         .eq('id', productId)
         .select('*');
 
