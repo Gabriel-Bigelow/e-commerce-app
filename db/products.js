@@ -134,7 +134,7 @@ const addProductToCart = async (req, res, next) => {
     const userId = req.user.id;
     const { quantity } = req.body;
     const { productId } = req.params;
-    const { product }= res.locals;
+    const { product } = res.locals;
 
     if (!quantity) return res.status(400).send('Item quantity not specified.');
 
@@ -148,7 +148,7 @@ const addProductToCart = async (req, res, next) => {
 
     let updatedCart;
 
-    if (quantity < product.stock) {
+    if (quantity <= product.stock) {
         if (userCart.data[0].cart_products.some(product => product.product_id == productId)) {
             updatedCart = await supabase.from('cart_products')
             .update({quantity: quantity})
@@ -169,8 +169,7 @@ const addProductToCart = async (req, res, next) => {
 
 // Checks to make sure a single product is in stock before adding it to a user's cart. This will prevent most errant orders where a user tries to buy more items than are available.
 const checkSingleProductStock = async (req, res, next) => {
-    //if (!req.user) return res.status(401).send('User not logged in.');
-
+    if (!req.user) return res.status(401).send('User not logged in.');
     const { productId } = req.params;
 
     const { data, error, status } = await supabase.from('products')

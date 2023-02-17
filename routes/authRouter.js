@@ -3,11 +3,13 @@ const authRouter = express.Router();
 const passport = require('passport');
 
 authRouter.post('/login', passport.authenticate('login'), (req, res) => {
-    res.status(200).send(req.user);
+    const { id, email, address, city, country, state } = req.user;
+    const user = { id, email, address, city, country, state };
+    res.status(200).send(user);
 })
 
 authRouter.post('/register', passport.authenticate('register'), (req, res) => {
-    res.status(200).send(req.user);
+    res.status(200).send('Success.');
 });
 
 authRouter.get('/logout', (req, res, next) => {
@@ -15,7 +17,7 @@ authRouter.get('/logout', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.status(200).send('successful logout');
+        res.status(200).send('Successful logout');
     })
 })
 

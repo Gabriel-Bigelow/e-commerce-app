@@ -3,6 +3,7 @@ const passport = require('passport');
 const session = require('express-session');
 const memoryStore = new session.MemoryStore();
 const cors = require('cors');
+require('dotenv').config();
 
 const apiRouter = require('../routes/apiRouter');
 
@@ -13,14 +14,18 @@ require('../config/passport');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(cors());
+
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}));
 
 app.use(
     session({
-        secret: "secretGoesHere",
+        secret: process.env.SESSION_SECRET,
         saveUninitialized: false,
-        resave: false,
-        store: memoryStore
+        resave: true,
+        store: memoryStore,
     })
 );
 
@@ -28,6 +33,7 @@ app.use((req, res, next) => {
     console.log(`${req.method}:${req.url}`);
     next();
 });
+
 app.use((req, res, next) => {
     // console.log(memoryStore);
     next();

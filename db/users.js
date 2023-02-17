@@ -41,9 +41,12 @@ const updateUser = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
-    const { email, address, city, state, country, password } = req.body;
-
+    const { email, address, city, state, zip, country, password } = req.body;
+    console.log(req.body);
+    console.log(address);
+    console.log(state);
     if (state && state.length !== 2) return res.status(401).send('State must be 2 characters in length. Example: OH');
+    if (zip && zip.length !== 5 || zip.length !== 9) return res.status(401).send('Zip must be 5 or 9 digits');
     if (country && country.length !== 3) return res.status(401).send('Country must be 3 characters in length. Example: USA');
 
     const values = {
@@ -51,6 +54,7 @@ const updateUser = async (req, res, next) => {
         address: address,
         city: city,
         state: state,
+        zip: zip,
         country: country
     };
 

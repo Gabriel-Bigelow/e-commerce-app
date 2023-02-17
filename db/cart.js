@@ -16,7 +16,7 @@ const getCartProducts = async (req, res, next) => {
         res.locals.cartProducts = data;
         next();
     } else {
-        return res.status(status).send('Cart is empty.');
+        return res.status(status).send({cartProducts: 'Cart is empty.'});
     }
 
 };
@@ -65,10 +65,6 @@ const checkCartProductsStock = async (req, res, next) => {
 
     const { data, error, status } = await supabase.rpc('check_cart_products_stock', { userid: userId});
 
-    console.log(data);
-    console.log(error);
-    console.log(status);
-
     if (error) return res.status(status).send(error);
 
     if (data.length > 0) {
@@ -103,7 +99,7 @@ const checkoutCart = async (req, res, next) => {
 const updateStock = async (req, res, next) => {
     const { newOrder } = res.locals;
 
-    newOrder.forEach(async product => await supabase.rpc('checkout_update_stock', { productid: product.product_id, quantity: product.quantity}));
+    newOrder.forEach(async product => await supabase.rpc('checkout_update_stock', { productid: parseInt(product.product_id), quantity: parseInt(product.quantity)}));
 
     res.status(201).send(newOrder);
 };
