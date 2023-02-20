@@ -26,15 +26,13 @@ const getUsers = async (req, res, next) => {
 
 const getUserByEmail = async (req, res, next) => {
     const { email } = req.params;
-    console.log(email);
+
     const { data, status, error } = await supabase.from('users').select('id').eq('email', email);
 
     if (error) {
         return res.status(status).send(error);
     }
-    console.log(error);
-    console.log(data);
-    console.log(status);
+
     if (data.length > 0) {
         return res.status(status).send(true);
     } else {
@@ -58,7 +56,6 @@ const getUserById = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-    console.log(req.user);
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
