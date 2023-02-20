@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const supabase = require('./database.js');
 
+const userInfoString = 'id, name_first, name_last, email, address, city, state, zip, country';
+
 
 // Inserts a new user into the database and triggers an SQL function to create a cart associated with that user.
 const registerUser = async (email, password) => {
@@ -22,13 +24,31 @@ const getUsers = async (req, res, next) => {
     }
 };
 
+const getUserByEmail = async (req, res, next) => {
+    const { email } = req.params;
+    console.log(email);
+    const { data, status, error } = await supabase.from('users').select('id').eq('email', email);
+
+    if (error) {
+        return res.status(status).send(error);
+    }
+    console.log(error);
+    console.log(data);
+    console.log(status);
+    if (data.length > 0) {
+        return res.status(status).send(true);
+    } else {
+        return res.status(status).send(false);
+    }
+}
+
 // using an id that doesn't exist still returns an empty array. Remember this when you set up authorization, if having undefined vs an empty array makes a difference.
 const getUserById = async (req, res, next) => {
     if (!req.user) return res.status(401).send('User not logged in.');
 
     const userId = req.user.id;
 
-    const { data, status, error } = await supabase.from('users').select().eq('id', userId);
+    const { data, status, error } = await supabase.from('users').select(userInfoString).eq('id', userId);
 
     if (data) {
         res.status(status).send(data[0]);
@@ -38,15 +58,14 @@ const getUserById = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
+    console.log(req.user);
     if (!req.user) return res.status(401).send('User not logged in.');
     
     const userId = req.user.id;
     const { email, address, city, state, zip, country, password } = req.body;
-    console.log(req.body);
-    console.log(address);
-    console.log(state);
+
     if (state && state.length !== 2) return res.status(401).send('State must be 2 characters in length. Example: OH');
-    if (zip && zip.length !== 5 || zip.length !== 9) return res.status(401).send('Zip must be 5 or 9 digits');
+    if (zip && zip.length !== 5 && zip.length !== 9) return res.status(401).send('Zip must be 5 or 9 digits');
     if (country && country.length !== 3) return res.status(401).send('Country must be 3 characters in length. Example: USA');
 
     const values = {
@@ -67,7 +86,7 @@ const updateUser = async (req, res, next) => {
     const { data, status } = await supabase.from('users')
     .update(values)
     .eq('id', userId)
-    .select('*');
+    .select(userInfoString);
 
     if (data.length > 0) {
         res.status(status).send(data[0]);
@@ -88,7 +107,10 @@ const deleteUser = async (req, res, next) => {
         address: null,
         city: null,
         state: null,
+        zip: null,
         country: null,
+        name_first: null,
+        name_last: null,
         active: false
     };
 
@@ -121,7 +143,9 @@ const deleteUser = async (req, res, next) => {
 module.exports = {
     registerUser,
     getUsers,
+    getUserByEmail,
     getUserById,
     updateUser,
-    deleteUser
+    deleteUser,
+    userInfoString
 }

@@ -1,12 +1,14 @@
 const express = require('express');
 const usersRouter = express.Router();
 
-const { getUsers, getUserById, deleteUser, updateUser } = require('../db/users');
+const { getUsers, getUserById, deleteUser, updateUser, getUserByEmail } = require('../db/users');
 
 
 
 // None --- gets all users information.
 usersRouter.get('/', getUsers);
+
+usersRouter.get('/userByEmail/:email', getUserByEmail);
 
 // gets user information for Passport user that is currently logged in
 usersRouter.get('/me', getUserById);
