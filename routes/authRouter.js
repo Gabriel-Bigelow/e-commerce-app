@@ -9,7 +9,9 @@ authRouter.post('/login', passport.authenticate('login'), (req, res) => {
 })
 
 authRouter.post('/register', passport.authenticate('register'), (req, res) => {
-    res.status(200).send('Success.');
+    const { id, email, address, city, country, state, zip, first_name, last_name } = req.user;
+    const user = { id, email, address, city, country, state, zip, first_name, last_name };
+    res.status(200).send(user);
 });
 
 authRouter.get('/logout', (req, res, next) => {
