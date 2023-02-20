@@ -7,12 +7,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 4000;
-const apiRouter = require('../routes/apiRouter');
+const apiRouter = require('./routes/apiRouter');
 
 const app = express();
 
 //import data here
-require('../config/passport');
+require('./config/passport');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
