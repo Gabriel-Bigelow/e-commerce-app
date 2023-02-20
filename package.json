@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --watch",
-    "start": "nodemon views/server.js"
+    "start": "nodemon functions/views/server.js"
   },
   "author": "Gabriel Bigelow",
   "license": "ISC",
