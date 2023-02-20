@@ -28,6 +28,10 @@ app.use(
         saveUninitialized: false,
         resave: true,
         store: memoryStore,
+        cookie: {
+            sameSite: 'none',
+            secure: true
+        }
     })
 );
 
