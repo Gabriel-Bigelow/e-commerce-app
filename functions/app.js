@@ -46,10 +46,6 @@ app.use(passport.session());
 
 app.use('/api', apiRouter);
 
-app.get('/test', (req, res) => {
-    res.status(200).send('This is working at /test');
-});
-
 app.listen(PORT, () => {
     console.log(`Server is listening on ${PORT}`);
 });
