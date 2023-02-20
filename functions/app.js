@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use(cors({
-    origin: "https://salttech.netlify.app/",
+    origin: "https://salttech.netlify.app",
     credentials: true
 }));
 
