@@ -1,10 +1,12 @@
 const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
+const serverless = require('serverless-http');
 const memoryStore = new session.MemoryStore();
 const cors = require('cors');
 require('dotenv').config();
 
+const PORT = process.env.PORT || 4000;
 const apiRouter = require('../routes/apiRouter');
 
 const app = express();
@@ -48,4 +50,8 @@ app.get('/test', (req, res) => {
     res.status(200).send('This is working at /test');
 });
 
-module.exports = app;
+app.listen(PORT, () => {
+    console.log(`Server is listening on ${PORT}`);
+});
+
+module.exports.handler = serverless(app);

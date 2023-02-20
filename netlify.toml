@@ -2,6 +2,6 @@
     functions="functions"
 
 [[redirects]]
-    to="/.netlify/functions/views/server/:splat"
+    to="/.netlify/functions/views/app/:splat"
     from="/*"
     status=200 
