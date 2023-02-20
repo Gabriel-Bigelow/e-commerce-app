@@ -44,4 +44,8 @@ app.use(passport.session());
 
 app.use('/api', apiRouter);
 
+app.get('/test', (req, res) => {
+    res.status(200).send('This is working at /test');
+});
+
 module.exports = app;
